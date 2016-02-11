@@ -14,5 +14,4 @@ RUN cd /usr/local/bin && iconv -f euc-jp -t utf-8 yomi2voca.pl > temp && chmod +
 ADD my.grammar my.yomi my.jconf /
 RUN yomi2voca.pl my.yomi > my.voca && mkdfa.pl my
 
-EXPOSE 5530
 CMD julius -C my.jconf
