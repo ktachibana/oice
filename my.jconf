@@ -1,5 +1,6 @@
 -gram my
 -h grammar-kit/model/phone_m/hmmdefs_ptm_gid.binhmm
 -hlist grammar-kit/model/phone_m/logicalTri
--output 3
 -input stdin
+-nolog
+-quiet
