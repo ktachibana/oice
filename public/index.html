@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>getUserMedia to wav demo</title>
+  <meta name="description" content="A demonstration of HTML5 APIs to create an wav audio." />
+  <meta name="keywords" content="WebRTC,getUserMedia,Web Workers,wav" />
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="text/javascript" src="//code.jquery.com/jquery-2.1.0.min.js"></script>
+</head>
+<body>
+<div id="wrap">
+  <div class="container">
+    <div id="header">
+     <h1>getUserMedia to wav demo</h1>
+    </div>
+
+    <div id="howto">
+      <div id="howto-icon" data-toggle="collapse" data-target="#howto-body">
+        <span class="glyphicon glyphicon-question-sign"></span>
+      </div>
+      <div id="howto-body" class="alert alert-warning collapse">
+        <p>How-To:</p>
+        <ol>
+          <li>Adjust <b>Low-pass Filter</b> value for noise reduction.</li>
+          <li>Press and keep <span class="glyphicon glyphicon-record"></span> button to record an audio.</li>
+          <li>If total time reached to 6 seconds or you release <span class="glyphicon glyphicon-record"></span> button, an wav audio will be created by Web Workers.</li>
+          <li>When wav creation is complete, it is displayed on lower field.</li>
+          <li>Click <span class="glyphicon glyphicon-play"></span> button to play.</li>
+          <li>Click <span class="glyphicon glyphicon-save"></span> button to save.</li>
+        </ol>
+      </div>
+    </div> <!-- /#howto -->
+
+    <div id="mic">
+      <div id="micControl">
+        <label for="lowpassFreq">Low-pass Filter</label>
+        &lt;<input type="text" id="lowpassFreq" name="lowpassFreq" value="20000" size="5">Hz
+      </div>
+      <canvas id="visual" width="256" height="256"></canvas>
+      <div id="timer">
+        <div id="captureTimer"></div>
+      </div>
+      <div class="btn-group">
+        <button id="captureButton" type="button" class="btn btn-default btn-lg" disabled><span class="glyphicon glyphicon-record"</span></button>
+      </div>
+    </div> <!-- /#mic -->
+
+    <pre id="timeline"></pre>
+
+  </div> <!-- /.container -->
+</div> <!-- /#wrap -->
+
+<script>
+window.URL = window.URL || window.webkitURL;
+navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia || navigator.msGetUserMedia;
+window.AudioContext = window.AudioContext || window.webkitAudioContext;
+
+var now = window.performance && (
+    performance.now || performance.mozNow || performance.msNow ||
+    performance.oNow || performance.webkitNow
+);
+window.getTime = function() {
+    return (now && now.call(performance)) ||
+        (new Date().getTime());
+}
+
+window.requestAnimationFrame = (function() {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        function(f) {
+            return window.setTimeout(f, 1000 / 60);
+        };
+}());
+window.cancelAnimationFrame = (function() {
+    return window.cancelAnimationFrame ||
+        window.cancelRequestAnimationFrame ||
+        window.webkitCancelAnimationFrame ||
+        window.webkitCancelRequestAnimationFrame ||
+        window.mozCancelAnimationFrame ||
+        window.mozCancelRequestAnimationFrame ||
+        window.msCancelAnimationFrame ||
+        window.msCancelRequestAnimationFrame ||
+        window.oCancelAnimationFrame ||
+        window.oCancelRequestAnimationFrame ||
+        function(id) {
+            window.clearTimeout(id);
+        };
+}());
+
+var timeMax = 6000;
+var timeColors = [
+  { r:   0, g: 0, b: 255 },
+  { r: 255, g: 0, b:   0 }
+];
+
+var audioContext = null;
+var lowpassFilter = null;
+var sampleRate = 0;
+
+var recorder = null;
+
+var visualCanvas = null;
+var visualContext = null;
+var vTimer = null;
+
+var analyser = null;
+
+var cFlag = false;
+
+var aTimer = null;
+var aTimeSum = 0;
+var aTimeOld = 0;
+
+var appInit = function() {
+    audioContext = new AudioContext();
+    sampleRate = audioContext.sampleRate;
+    console.log("sample rate:" + sampleRate);
+
+    lowpassFilter = audioContext.createBiquadFilter();
+    lowpassFilter.type = 0;
+    lowpassFilter.frequency.value = 20000;
+
+    analyser = audioContext.createAnalyser();
+    analyser.fftSize = 1024;
+    analyser.smoothingTimeContant = 0.9;
+
+    visualCanvas = document.getElementById('visual');
+    visualContext = visualCanvas.getContext('2d');
+
+    if (!navigator.getUserMedia) {
+        alert("WebRTC(getUserMedia) is not supported.");
+        return;
+    }
+
+    navigator.getUserMedia({
+        video: false,
+        audio: true
+    }, function(stream) {
+        var input = audioContext.createMediaStreamSource(stream);
+
+        input.connect(lowpassFilter);
+        lowpassFilter.connect(analyser);
+        visualStart();
+
+        recorder = new Recorder(lowpassFilter, {
+            workerPath: './js/recorderjs/recorderWorker.js'
+        });
+
+        $('#captureButton').removeAttr('disabled');
+    }, function() {
+        alert("Mic access error!");
+        return;
+    });
+}
+
+var visualUpdate = function() {
+    if (!analyser) {
+        return;
+    }
+
+    visualContext.fillStyle = "rgb(0,0,0)";
+    visualContext.fillRect(0, 0, 256, 256);
+    var data = new Uint8Array(256);
+    analyser.getByteFrequencyData(data);
+    for (var i = 0; i < 256; ++i) {
+        visualContext.fillStyle = "rgb(0,255,0)"
+        visualContext.fillRect(i, 256 - data[i], 1, data[i]);
+    }
+}
+var visualStart = function() {
+    if (vTimer) {
+        return;
+    }
+
+    vTimer = setInterval(visualUpdate, 100);
+}
+var visualStop = function() {
+    if (!vTimer) {
+        return;
+    }
+
+    clearInterval(vTimer);
+    vTimer = null;
+}
+
+var captureStart = function() {
+    if (cFlag) { // already started.
+        return;
+    }
+
+    cFlag = true;
+    timerStart();
+
+    recorder && recorder.record();
+
+    $('#captureButton').addClass('on');
+}
+var captureStop = function() {
+    if (!cFlag) { // already stopped.
+        return;
+    }
+
+    timerStop();
+    cFlag = false;
+
+    recorder && recorder.stop();
+    recorder && recorder.exportWAV(wavExported);
+
+    $('#captureButton').removeClass('on');
+    $('#captureButton').attr('disabled', 'disabled');
+}
+
+var wavExported = function(blob) {
+    var form = new FormData();
+    form.append('file', blob, 'voice.wav');
+    $.ajax({
+      url: '/',
+      type: 'POST',
+      data: form,
+      processData: false,
+      contentType: false
+    }).done(function(data) {
+      $('#timeline').append(data + "\r\n");
+    });
+
+    timerReset();
+    recorder.clear();
+
+    $('#captureButton').removeAttr('disabled');
+}
+var wavPlay = function(url) {
+    var request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+
+    request.onload = function() {
+        audioContext.decodeAudioData(request.response, function(buffer) {
+            var source = audioContext.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+        });
+    }
+    request.send();
+}
+
+var timerUpdate = function() {
+    var percent = Math.floor((aTimeSum / timeMax) * 100);
+    if (percent >= 100) {
+        captureStop();
+        percent = 100;
+    }
+
+    var colorR = timeColors[0]['r'] + Math.floor((timeColors[1]['r'] - timeColors[0]['r']) * (percent / 100.0));
+    var colorG = timeColors[0]['g'] + Math.floor((timeColors[1]['g'] - timeColors[0]['g']) * (percent / 100.0));
+    var colorB = timeColors[0]['b'] + Math.floor((timeColors[1]['b'] - timeColors[0]['b']) * (percent / 100.0));
+    var color = 'rgba(' + colorR + ',' + colorG + ',' + colorB + ',1)';
+    //	console.log(color);
+
+    $('#captureTimer').css('width', percent + '%');
+    $('#captureTimer').css('background-color', color);
+}
+var timerLoop = function() {
+    var now = getTime();
+    aTimeSum += (now - aTimeOld);
+    aTimeOld = now;
+
+    timerUpdate();
+
+    aTimer = requestAnimationFrame(timerLoop);
+}
+var timerStart = function() {
+    aTimeOld = getTime();
+    timerLoop();
+}
+var timerStop = function() {
+    if (aTimer) {
+        cancelAnimationFrame(aTimer);
+        aTimer = null;
+    }
+}
+var timerReset = function() {
+    timerStop();
+    aTimeSum = 0;
+    timerUpdate();
+}
+
+$(document).ready(function() {
+    var ua = navigator.userAgent;
+    if (ua.search(/iPhone/) != -1 || ua.search(/iPad/) != -1 ||
+        ua.search(/iPod/) != -1 || ua.search(/Android/) != -1) {
+        $("#captureButton").bind("touchstart", function(e) {
+            captureStart();
+        });
+        $("#captureButton").bind("touchend", function(e) {
+            captureStop();
+        });
+    } else {
+        $("#captureButton").mousedown(function() {
+            captureStart();
+        });
+        $("#captureButton").mouseup(function() {
+            captureStop();
+        });
+    }
+
+    $('#lowpassFreq').change(function() {
+        var val = parseInt($('#lowpassFreq').val());
+        if (val > 0 && lowpassFilter) {
+            lowpassFilter.frequency.value = val;
+        }
+    });
+
+    appInit();
+});
+</script>
+<script src="js/recorderjs/recorder.js"></script>
+</body>
+</html>
