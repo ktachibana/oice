@@ -2,6 +2,10 @@ require 'sinatra'
 
 PATTERN = %r|sentence1: <s> (.+) </s>|
 
+get '/' do
+  File.read('public/index.html')
+end
+
 post '/' do
   file = params[:file][:tempfile]
   command = "cat #{file.path}|sox -q -V1 - -b 16 -r 16k -c 1 -t .wav - | julius -C my.jconf"
