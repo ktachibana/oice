@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'json'
 
 PATTERN = %r|sentence1: <s> (.+) </s>|
 
@@ -14,12 +15,16 @@ post '/' do
   sentence = str[PATTERN, 1] || (break 204)
   words = sentence.split(/\s+/)
 
-  results = []
+  skills = []
   until words.first == 'slot' || words.empty?
-    results << words.shift
-    results << "#{words.shift if %w(+ -).include?(words.first)}#{words.shift}"
+    skills << {
+      route: words.shift,
+      point: "#{words.shift if %w(+ -).include?(words.first)}#{words.shift}".to_i
+    }
   end
-  results = ['', words.last, *results]
+  result = { skills: skills }
+  result[:slot] = words.last.to_i
 
-  results.join(',')
+  content_type :json
+  result.to_json
 end
