@@ -154,8 +154,9 @@ var appInit = function() {
         });
 
         $('#captureButton').removeAttr('disabled');
-    }, function() {
-        alert("Mic access error!");
+    }, function(e) {
+        alert("Mic access error!" + e);
+        console.error(e);
         return;
     });
 }

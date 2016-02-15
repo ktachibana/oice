@@ -1,0 +1,5 @@
+ssl: true
+ssl-key-file: ./server.key
+ssl-cert-file: ./server.crt
+environment: production
+port: 443
