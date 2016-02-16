@@ -39,13 +39,8 @@ window.cancelAnimationFrame = (function() {
 }());
 
 var timeMax = 6000;
-var timeColors = [
-  { r:   0, g: 0, b: 255 },
-  { r: 255, g: 0, b:   0 }
-];
 
 var audioContext = null;
-var sampleRate = 0;
 
 var recorder = null;
 
@@ -61,10 +56,22 @@ var aTimer = null;
 var aTimeSum = 0;
 var aTimeOld = 0;
 
+Vue.config.debug = true;
+var app = new Vue({
+  el: '#vue-app',
+  data: {
+    items: []
+  },
+  methods: {
+    addItem: function(data) {
+      this.items.unshift(new Item(data))
+    }
+  }
+});
+
+
 var appInit = function() {
     audioContext = new AudioContext();
-    sampleRate = audioContext.sampleRate;
-    console.log("sample rate:" + sampleRate);
 
     analyser = audioContext.createAnalyser();
     analyser.fftSize = 32;
@@ -164,7 +171,7 @@ var captureStop = function() {
 
 var wavExported = function(blob) {
     var form = new FormData();
-    form.append('file', blob, 'voice.wav');
+    form.append('file', blob);
     $.ajax({
       url: '/',
       type: 'POST',
@@ -174,7 +181,7 @@ var wavExported = function(blob) {
       contentType: false
     }).done(function(data, _, xhr) {
       if(xhr.status == 204) return;
-      $('#timeline').append(JSON.stringify(data) + "\r\n");
+      app.addItem(data);
     });
 
     timerReset();
@@ -216,6 +223,21 @@ var timerReset = function() {
     aTimeSum = 0;
     timerUpdate();
 }
+
+var Skill = function(attrs) {
+  attrs = attrs || {};
+  this.route = attrs.route || '';
+  this.point = attrs.point || null;
+};
+
+var Item = function(attrs) {
+  this.skills = attrs.skills.map(function(skill) {
+    return new Skill(skill);
+  });
+  this.slot = attrs.slot || 0;
+
+  this.slotMarks = "◯".repeat(this.slot);
+};
 
 $(document).ready(function() {
     var ua = navigator.userAgent;

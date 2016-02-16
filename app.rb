@@ -22,8 +22,7 @@ post '/' do
       point: "#{words.shift if %w(+ -).include?(words.first)}#{words.shift}".to_i
     }
   end
-  result = { skills: skills }
-  result[:slot] = words.last.to_i
+  result = { skills: skills, slot: words.last.to_i }
 
   content_type :json
   result.to_json
