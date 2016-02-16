@@ -91,3 +91,11 @@ h1 {
     margin: 0;
     list-style-type: none;
 }
+
+.mic-level {
+    font-size: 2em;
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 8px;
+}

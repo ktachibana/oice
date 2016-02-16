@@ -98,66 +98,6 @@ var startLimitTimer = function(limitTimeInMSec, options) {
 };
 
 
-var visualCanvas = null;
-var visualContext = null;
-
-var updateLevelCanvas = function(levelAsByte) {
-  var w = visualCanvas.width;
-  var h = visualCanvas.height;
-  visualContext.fillStyle = "rgb(0,255,0)";
-  visualContext.fillRect(0, 0, levelAsByte, h);
-  visualContext.fillStyle = "rgb(0,0,0)";
-  visualContext.fillRect(levelAsByte, 0, w - levelAsByte, h);
-};
-
-var recorder = null;
-
-var appInit = function () {
-  visualCanvas = document.getElementById('visual');
-  visualContext = visualCanvas.getContext('2d');
-
-  if (!navigator.getUserMedia) {
-    alert("WebRTC(getUserMedia) is not supported.");
-    return;
-  }
-
-  navigator.getUserMedia({
-    video: false,
-    audio: true
-  }, function (stream) {
-    var audioContext = new AudioContext();
-
-    var input = audioContext.createMediaStreamSource(stream);
-
-    startMicLevelDetection(input, updateLevelCanvas);
-
-    recorder = new Recorder(input, {
-      workerPath: './js/recorderjs/recorderWorker.js'
-    });
-
-    $('#captureButton').removeAttr('disabled');
-  }, function (e) {
-    alert("Mic access error!" + e);
-    console.error(e);
-  });
-};
-
-
-$(document).ready(function () {
-  //var ua = navigator.userAgent;
-  //if (ua.search(/iPhone/) != -1 || ua.search(/iPad/) != -1 ||
-  //  ua.search(/iPod/) != -1 || ua.search(/Android/) != -1) {
-  //  $("#captureButton").bind("touchstart", function (e) {
-  //    captureStart();
-  //  });
-  //  $("#captureButton").bind("touchend", function (e) {
-  //    captureStop();
-  //  });
-  //}
-
-  appInit();
-});
-
 var Skill = function (attrs) {
   attrs = attrs || {};
   this.route = attrs.route || '';
@@ -173,62 +113,110 @@ var Item = function (attrs) {
   this.slotMarks = "◯".repeat(this.slot);
 };
 
-Vue.config.debug = true;
-var view = new Vue({
-  el: '#vue-app',
-  data: {
-    items: [],
-    timerStopper: null,
-    timerProgress: 0
-  },
-  methods: {
-    addItem: function (data) {
-      this.items.unshift(new Item(data));
-    },
-    startCapture: function() {
-      var self = this;
+$(document).ready(function () {
+  //var ua = navigator.userAgent;
+  //if (ua.search(/iPhone/) != -1 || ua.search(/iPad/) != -1 ||
+  //  ua.search(/iPod/) != -1 || ua.search(/Android/) != -1) {
+  //  $("#captureButton").bind("touchstart", function (e) {
+  //    captureStart();
+  //  });
+  //  $("#captureButton").bind("touchend", function (e) {
+  //    captureStop();
+  //  });
+  //}
 
-      recorder && recorder.record();
-      this.timerStopper = startLimitTimer(5000, {
-        progress: function(percent) {
-          self.timerProgress = percent;
-        },
-        limit: function() {
-          self.stopCapture();
-        }
-      });
-
-      //$('#captureButton').addClass('on');
-    },
-    stopCapture: function() {
-      this.timerStopper();
-      this.timerProgress = 0;
-      recorder && recorder.stop();
-      recorder && recorder.exportWAV(this.wavExported);
-
-      //$('#captureButton').removeClass('on');
-      //$('#captureButton').attr('disabled', 'disabled');
-    },
-    wavExported: function (blob) {
-      var form = new FormData();
-      form.append('file', blob);
-
-      var self = this;
-      $.ajax({
-        url: '/',
-        type: 'POST',
-        data: form,
-        dataType: 'json',
-        processData: false,
-        contentType: false
-      }).done(function (data, _, xhr) {
-        if (xhr.status == 204) return;
-        self.addItem(data);
-      });
-
-      recorder.clear();
-
-      $('#captureButton').removeAttr('disabled');
-    }
+  if (!navigator.getUserMedia) {
+    alert("WebRTC(getUserMedia) is not supported.");
+    return;
   }
+
+  navigator.getUserMedia({
+    video: false,
+    audio: true
+  }, function (stream) {
+    var audioContext = new AudioContext();
+    var input = audioContext.createMediaStreamSource(stream);
+
+    Vue.config.debug = true;
+    var view = new Vue({
+      el: '#vue-app',
+      data: {
+        recorder: null,
+        items: [],
+        micLevel: 0,
+        timerStopper: null,
+        timerProgress: 0
+      },
+      created: function() {
+        var self = this;
+        startMicLevelDetection(input, function(micLevel) {
+          self.micLevel = micLevel;
+        });
+
+        this.recorder = new Recorder(input, {
+          workerPath: './js/recorderjs/recorderWorker.js'
+        });
+      },
+      computed: {
+        micLevelEm: function() {
+          return 1 + (this.micLevel / 256 * 2);
+        }
+      },
+      methods: {
+        addItem: function (data) {
+          this.items.unshift(new Item(data));
+        },
+        startCapture: function() {
+          var self = this;
+
+          this.recorder.record();
+          this.timerStopper = startLimitTimer(5000, {
+            progress: function(percent) {
+              self.timerProgress = percent;
+            },
+            limit: function() {
+              self.stopCapture();
+            }
+          });
+
+          //$('#captureButton').addClass('on');
+        },
+        stopCapture: function() {
+          this.timerStopper();
+          this.timerProgress = 0;
+          this.recorder.stop();
+          this.recorder.exportWAV(this.wavExported);
+
+          //$('#captureButton').removeClass('on');
+          //$('#captureButton').attr('disabled', 'disabled');
+        },
+        wavExported: function (blob) {
+          var form = new FormData();
+          form.append('file', blob);
+
+          var self = this;
+          $.ajax({
+            url: '/',
+            type: 'POST',
+            data: form,
+            dataType: 'json',
+            processData: false,
+            contentType: false
+          }).done(function (data, _, xhr) {
+            if (xhr.status == 204) return;
+            self.addItem(data);
+          });
+
+          this.recorder.clear();
+
+          $('#captureButton').removeAttr('disabled');
+        }
+      }
+    });
+
+    $('#captureButton').removeAttr('disabled');
+  }, function (e) {
+    alert("Mic access error!" + e);
+    console.error(e);
+  });
 });

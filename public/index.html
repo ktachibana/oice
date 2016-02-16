@@ -10,15 +10,14 @@
 <body>
 <div id="wrap">
   <div class="container">
-    <div id="header">
-     <h1>MHX 護石音声入力</h1>
-    </div>
-
-    <div class="mic">
-      <canvas id="visual" width="256" height="16"></canvas>
-    </div>
-
     <div id="vue-app">
+      <div id="header" class="clearfix">
+        <h1>
+          MHX 護石音声入力
+          <span class="mic-level glyphicon glyphicon-headphones" :style="{ fontSize: micLevelEm + 'em' }"></span>
+        </h1>
+      </div>
+
       <div id="timer">
         <div id="captureTimer" :style="{ width: timerProgress + '%' }"></div>
       </div>
