@@ -10,7 +10,7 @@ var now = window.performance && (
 window.getTime = function () {
   return (now && now.call(performance)) ||
     (new Date().getTime());
-}
+};
 
 window.requestAnimationFrame = (function () {
   return window.requestAnimationFrame ||
@@ -38,18 +38,10 @@ window.cancelAnimationFrame = (function () {
     };
 }());
 
-var timeMax = 6000;
-
 var recorder = null;
 
 var visualCanvas = null;
 var visualContext = null;
-
-var cFlag = false;
-
-var aTimer = null;
-var aTimeSum = 0;
-var aTimeOld = 0;
 
 Vue.config.debug = true;
 
@@ -66,6 +58,75 @@ var Item = function (attrs) {
   this.slot = attrs.slot || 0;
 
   this.slotMarks = "◯".repeat(this.slot);
+};
+
+
+var startMicLevelDetection = function(source, callback) {
+  var analyser = source.context.createAnalyser();
+  analyser.fftSize = 32;
+  analyser.smoothingTimeConstant = 0.3;
+  source.connect(analyser);
+
+  var buf = new Uint8Array(16);
+  var onTimer = function () {
+    analyser.getByteFrequencyData(buf);
+
+    var bufSum = 0;
+    for (var i = 0; i < buf.length; i++) {
+      bufSum += buf[i];
+    }
+    var level = bufSum / buf.length;
+    callback(level);
+  };
+
+  return setInterval(onTimer, 100);
+};
+
+var updateLevelCanvas = function(levelAsByte) {
+  var w = visualCanvas.width;
+  var h = visualCanvas.height;
+  visualContext.fillStyle = "rgb(0,255,0)";
+  visualContext.fillRect(0, 0, levelAsByte, h);
+  visualContext.fillStyle = "rgb(0,0,0)";
+  visualContext.fillRect(levelAsByte, 0, w - levelAsByte, h);
+};
+
+var startLimitTimer = function(limitTimeInMSec, options) {
+  options = options || {};
+  var limitCallback = options.limit || function() {};
+  var progressCallback = options.progress || function(percent) {};
+
+  var timer = null;
+  var timeFromStart = 0;
+  var timeAtPrevFrame = getTime();
+
+  var stop = function () {
+    if (timer) {
+      cancelAnimationFrame(timer);
+      timer = null;
+    }
+  };
+
+  var updateFrame = function () {
+    var now = getTime();
+    timeFromStart += (now - timeAtPrevFrame);
+    timeAtPrevFrame = now;
+
+    var percent = Math.floor((timeFromStart / limitTimeInMSec) * 100);
+    if (100 <= percent) {
+      stop();
+      progressCallback(100);
+      limitCallback();
+      return;
+    }
+
+    progressCallback(percent);
+
+    timer = requestAnimationFrame(updateFrame);
+  };
+  updateFrame();
+
+  return stop;
 };
 
 var view = new Vue({
@@ -113,44 +174,12 @@ var view = new Vue({
         self.addItem(data);
       });
 
-      timerReset();
       recorder.clear();
 
       $('#captureButton').removeAttr('disabled');
     }
   }
 });
-
-
-var startMicLevelDetection = function(source, callback) {
-  var analyser = source.context.createAnalyser();
-  analyser.fftSize = 32;
-  analyser.smoothingTimeConstant = 0.3;
-  source.connect(analyser);
-
-  var buf = new Uint8Array(16);
-  var onTimer = function () {
-    analyser.getByteFrequencyData(buf);
-
-    var bufSum = 0;
-    for (var i = 0; i < buf.length; i++) {
-      bufSum += buf[i];
-    }
-    var level = bufSum / buf.length;
-    callback(level);
-  };
-
-  return setInterval(onTimer, 100);
-};
-
-var updateLevelCanvas = function(levelAsByte) {
-  var w = visualCanvas.width;
-  var h = visualCanvas.height;
-  visualContext.fillStyle = "rgb(0,255,0)";
-  visualContext.fillRect(0, 0, levelAsByte, h);
-  visualContext.fillStyle = "rgb(0,0,0)";
-  visualContext.fillRect(levelAsByte, 0, w - levelAsByte, h);
-};
 
 var appInit = function () {
   visualCanvas = document.getElementById('visual');
@@ -171,7 +200,6 @@ var appInit = function () {
 
     startMicLevelDetection(input, updateLevelCanvas);
 
-
     recorder = new Recorder(input, {
       workerPath: './js/recorderjs/recorderWorker.js'
     });
@@ -184,32 +212,43 @@ var appInit = function () {
 };
 
 
-var captureStart = function () {
-  if (cFlag) { // already started.
-    return;
-  }
+var captureTimerStopper = null;
 
-  cFlag = true;
-  timerStart();
-
-  recorder && recorder.record();
-
-  $('#captureButton').addClass('on');
-}
 var captureStop = function () {
-  if (!cFlag) { // already stopped.
+  if (!captureTimerStopper) { // already stopped.
     return;
   }
 
-  timerStop();
-  cFlag = false;
+  captureTimerStopper();
+  captureTimerStopper = null;
+
+  var $timerNode = $('#captureTimer');
+  $timerNode.css('width', '0');
 
   recorder && recorder.stop();
   recorder && recorder.exportWAV(wavExported);
 
   $('#captureButton').removeClass('on');
   $('#captureButton').attr('disabled', 'disabled');
-}
+};
+
+var captureStart = function () {
+  if (captureTimerStopper) { // already started.
+    return;
+  }
+
+  var $timerNode = $('#captureTimer');
+  captureTimerStopper = startLimitTimer(6000, {
+    limit: captureStop,
+    progress: function(percent) {
+      $timerNode.css('width', percent + '%');
+    }
+  });
+
+  recorder && recorder.record();
+
+  $('#captureButton').addClass('on');
+};
 
 var wavExported = function (blob) {
   var form = new FormData();
@@ -227,45 +266,10 @@ var wavExported = function (blob) {
     view.addItem(data);
   });
 
-  timerReset();
   recorder.clear();
 
   $('#captureButton').removeAttr('disabled');
-}
-
-var timerUpdate = function () {
-  var percent = Math.floor((aTimeSum / timeMax) * 100);
-  if (percent >= 100) {
-    captureStop();
-    percent = 100;
-  }
-
-  $('#captureTimer').css('width', percent + '%');
-}
-var timerLoop = function () {
-  var now = getTime();
-  aTimeSum += (now - aTimeOld);
-  aTimeOld = now;
-
-  timerUpdate();
-
-  aTimer = requestAnimationFrame(timerLoop);
-}
-var timerStart = function () {
-  aTimeOld = getTime();
-  timerLoop();
-}
-var timerStop = function () {
-  if (aTimer) {
-    cancelAnimationFrame(aTimer);
-    aTimer = null;
-  }
-}
-var timerReset = function () {
-  timerStop();
-  aTimeSum = 0;
-  timerUpdate();
-}
+};
 
 $(document).ready(function () {
   var ua = navigator.userAgent;
