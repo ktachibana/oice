@@ -16,21 +16,16 @@
 
     <div class="mic">
       <canvas id="visual" width="256" height="16"></canvas>
-      <div id="timer">
-        <div id="captureTimer"></div>
-      </div>
     </div>
 
     <div id="vue-app">
-      <div v-text="text"></div>
-      <button v-on:click="add">Change</button>
+      <div id="timer">
+        <div id="captureTimer" :style="{ width: timerProgress + '%' }"></div>
+      </div>
 
       <div class="btn-group">
-        <button id="captureButton" type="button" class="btn btn-default btn-lg" disabled>
+        <button id="captureButton" type="button" class="btn btn-default btn-lg" @mousedown="startCapture" @mouseup="stopCapture">
           <span class="glyphicon glyphicon-record"></span>
-        </button>
-        <button type="button" class="btn btn-default btn-lg" v-on:mousedown="startCapture" v-on:mouseup="stopCapture">
-          <span class="glyphicon glyphicon-record"></span>New
         </button>
       </div>
 

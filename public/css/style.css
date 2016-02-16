@@ -65,11 +65,12 @@ h1 {
 }
 
 #timer {
+    width: 256px;
     background-color: #000000;
     margin: 0;
 }
 #captureTimer {
-    width: 0%;
+    width: 0;
     height: 20px;
     background-color: silver;
 }

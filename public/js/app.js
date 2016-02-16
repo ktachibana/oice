@@ -38,29 +38,6 @@ window.cancelAnimationFrame = (function () {
     };
 }());
 
-var recorder = null;
-
-var visualCanvas = null;
-var visualContext = null;
-
-Vue.config.debug = true;
-
-var Skill = function (attrs) {
-  attrs = attrs || {};
-  this.route = attrs.route || '';
-  this.point = attrs.point || null;
-};
-
-var Item = function (attrs) {
-  this.skills = attrs.skills.map(function (skill) {
-    return new Skill(skill);
-  });
-  this.slot = attrs.slot || 0;
-
-  this.slotMarks = "◯".repeat(this.slot);
-};
-
-
 var startMicLevelDetection = function(source, callback) {
   var analyser = source.context.createAnalyser();
   analyser.fftSize = 32;
@@ -80,15 +57,6 @@ var startMicLevelDetection = function(source, callback) {
   };
 
   return setInterval(onTimer, 100);
-};
-
-var updateLevelCanvas = function(levelAsByte) {
-  var w = visualCanvas.width;
-  var h = visualCanvas.height;
-  visualContext.fillStyle = "rgb(0,255,0)";
-  visualContext.fillRect(0, 0, levelAsByte, h);
-  visualContext.fillStyle = "rgb(0,0,0)";
-  visualContext.fillRect(levelAsByte, 0, w - levelAsByte, h);
 };
 
 var startLimitTimer = function(limitTimeInMSec, options) {
@@ -129,57 +97,20 @@ var startLimitTimer = function(limitTimeInMSec, options) {
   return stop;
 };
 
-var view = new Vue({
-  el: '#vue-app',
-  data: {
-    text: 'foo',
-    items: []
-  },
-  methods: {
-    addItem: function (data) {
-      this.items.unshift(new Item(data));
-    },
-    change: function() {
-      this.text = 'bar';
-    },
-    add: function () {
-      this.addItem({ skills: [{ route: '採取', point: 1 }, { }], slot: 2 });
-    },
-    startCapture: function() {
-      recorder && recorder.record();
 
-      //$('#captureButton').addClass('on');
-    },
-    stopCapture: function() {
-      recorder && recorder.stop();
-      recorder && recorder.exportWAV(this.wavExported);
+var visualCanvas = null;
+var visualContext = null;
 
-      //$('#captureButton').removeClass('on');
-      //$('#captureButton').attr('disabled', 'disabled');
-    },
-    wavExported: function (blob) {
-      var form = new FormData();
-      form.append('file', blob);
+var updateLevelCanvas = function(levelAsByte) {
+  var w = visualCanvas.width;
+  var h = visualCanvas.height;
+  visualContext.fillStyle = "rgb(0,255,0)";
+  visualContext.fillRect(0, 0, levelAsByte, h);
+  visualContext.fillStyle = "rgb(0,0,0)";
+  visualContext.fillRect(levelAsByte, 0, w - levelAsByte, h);
+};
 
-      var self = this;
-      $.ajax({
-        url: '/',
-        type: 'POST',
-        data: form,
-        dataType: 'json',
-        processData: false,
-        contentType: false
-      }).done(function (data, _, xhr) {
-        if (xhr.status == 204) return;
-        self.addItem(data);
-      });
-
-      recorder.clear();
-
-      $('#captureButton').removeAttr('disabled');
-    }
-  }
-});
+var recorder = null;
 
 var appInit = function () {
   visualCanvas = document.getElementById('visual');
@@ -212,83 +143,92 @@ var appInit = function () {
 };
 
 
-var captureTimerStopper = null;
-
-var captureStop = function () {
-  if (!captureTimerStopper) { // already stopped.
-    return;
-  }
-
-  captureTimerStopper();
-  captureTimerStopper = null;
-
-  var $timerNode = $('#captureTimer');
-  $timerNode.css('width', '0');
-
-  recorder && recorder.stop();
-  recorder && recorder.exportWAV(wavExported);
-
-  $('#captureButton').removeClass('on');
-  $('#captureButton').attr('disabled', 'disabled');
-};
-
-var captureStart = function () {
-  if (captureTimerStopper) { // already started.
-    return;
-  }
-
-  var $timerNode = $('#captureTimer');
-  captureTimerStopper = startLimitTimer(6000, {
-    limit: captureStop,
-    progress: function(percent) {
-      $timerNode.css('width', percent + '%');
-    }
-  });
-
-  recorder && recorder.record();
-
-  $('#captureButton').addClass('on');
-};
-
-var wavExported = function (blob) {
-  var form = new FormData();
-  form.append('file', blob);
-  $.ajax({
-    url: '/',
-    type: 'POST',
-    data: form,
-    dataType: 'json',
-    processData: false,
-    contentType: false
-  }).done(function (data, _, xhr) {
-    if (xhr.status == 204) return;
-    console.log(data)
-    view.addItem(data);
-  });
-
-  recorder.clear();
-
-  $('#captureButton').removeAttr('disabled');
-};
-
 $(document).ready(function () {
-  var ua = navigator.userAgent;
-  if (ua.search(/iPhone/) != -1 || ua.search(/iPad/) != -1 ||
-    ua.search(/iPod/) != -1 || ua.search(/Android/) != -1) {
-    $("#captureButton").bind("touchstart", function (e) {
-      captureStart();
-    });
-    $("#captureButton").bind("touchend", function (e) {
-      captureStop();
-    });
-  } else {
-    $("#captureButton").mousedown(function () {
-      captureStart();
-    });
-    $("#captureButton").mouseup(function () {
-      captureStop();
-    });
-  }
+  //var ua = navigator.userAgent;
+  //if (ua.search(/iPhone/) != -1 || ua.search(/iPad/) != -1 ||
+  //  ua.search(/iPod/) != -1 || ua.search(/Android/) != -1) {
+  //  $("#captureButton").bind("touchstart", function (e) {
+  //    captureStart();
+  //  });
+  //  $("#captureButton").bind("touchend", function (e) {
+  //    captureStop();
+  //  });
+  //}
 
   appInit();
+});
+
+var Skill = function (attrs) {
+  attrs = attrs || {};
+  this.route = attrs.route || '';
+  this.point = attrs.point || null;
+};
+
+var Item = function (attrs) {
+  this.skills = attrs.skills.map(function (skill) {
+    return new Skill(skill);
+  });
+  this.slot = attrs.slot || 0;
+
+  this.slotMarks = "◯".repeat(this.slot);
+};
+
+Vue.config.debug = true;
+var view = new Vue({
+  el: '#vue-app',
+  data: {
+    items: [],
+    timerStopper: null,
+    timerProgress: 0
+  },
+  methods: {
+    addItem: function (data) {
+      this.items.unshift(new Item(data));
+    },
+    startCapture: function() {
+      var self = this;
+
+      recorder && recorder.record();
+      this.timerStopper = startLimitTimer(5000, {
+        progress: function(percent) {
+          self.timerProgress = percent;
+        },
+        limit: function() {
+          self.stopCapture();
+        }
+      });
+
+      //$('#captureButton').addClass('on');
+    },
+    stopCapture: function() {
+      this.timerStopper();
+      this.timerProgress = 0;
+      recorder && recorder.stop();
+      recorder && recorder.exportWAV(this.wavExported);
+
+      //$('#captureButton').removeClass('on');
+      //$('#captureButton').attr('disabled', 'disabled');
+    },
+    wavExported: function (blob) {
+      var form = new FormData();
+      form.append('file', blob);
+
+      var self = this;
+      $.ajax({
+        url: '/',
+        type: 'POST',
+        data: form,
+        dataType: 'json',
+        processData: false,
+        contentType: false
+      }).done(function (data, _, xhr) {
+        if (xhr.status == 204) return;
+        self.addItem(data);
+      });
+
+      recorder.clear();
+
+      $('#captureButton').removeAttr('disabled');
+    }
+  }
 });
