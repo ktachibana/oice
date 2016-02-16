@@ -13,30 +13,45 @@
      <h1>MHX 護石音声入力</h1>
     </div>
 
-    <div id="mic">
+    <div class="mic">
       <canvas id="visual" width="256" height="16"></canvas>
       <div id="timer">
         <div id="captureTimer"></div>
       </div>
-      <div class="btn-group">
-        <button id="captureButton" type="button" class="btn btn-default btn-lg" disabled><span class="glyphicon glyphicon-record"</span></button>
-      </div>
-    </div> <!-- /#mic -->
+    </div>
 
     <div id="vue-app">
+      <div v-text="text"></div>
+      <button v-on:click="add">Change</button>
+
+      <div class="btn-group">
+        <button id="captureButton" type="button" class="btn btn-default btn-lg" disabled>
+          <span class="glyphicon glyphicon-record"></span>
+        </button>
+        <button type="button" class="btn btn-default btn-lg" v-on:mousedown="startCapture" v-on:mouseup="stopCapture">
+          <span class="glyphicon glyphicon-record"></span>New
+        </button>
+      </div>
+
+
       <table class="table table-striped table-hover table-condensed">
         <tr v-for="item in items">
           <td>{{item.skills[0].route}}</td>
           <td>{{item.skills[0].point}}</td>
-          <td>{{item.skills[1].route}}</td>
-          <td>{{item.skills[1].point}}</td>
+          <template v-if="item.skills[1]">
+            <td>{{item.skills[1].route}}</td>
+            <td>{{item.skills[1].point}}</td>
+          </template>
+          <template v-else>
+            <td></td>
+            <td></td>
+          </template>
           <td>{{item.slotMarks}}</td>
         </tr>
       </table>
     </div>
-
-  </div> <!-- /.container -->
-</div> <!-- /#wrap -->
+  </div>
+</div>
 
 <script src="js/jquery-2.1.0.min.js"></script>
 <script src="js/vue.js"></script>

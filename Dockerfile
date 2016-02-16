@@ -17,7 +17,6 @@ RUN bundle
 
 ADD . ./
 RUN yomi2voca.pl my.yomi > my.voca 2> /dev/null && mkdfa.pl my
-RUN sh gen-ssl.sh
 
 EXPOSE 443
 ENV RUBYOPT "-E UTF-8"
