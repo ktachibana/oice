@@ -102,6 +102,7 @@ var Skill = function (attrs) {
   attrs = attrs || {};
   this.route = attrs.route || '';
   this.point = attrs.point || null;
+  this.cols = [this.route, (this.point || '').toString()];
 };
 Skill.empty = new Skill({ route: '', point: null });
 
@@ -112,6 +113,9 @@ var Item = function (attrs) {
   this.slot = attrs.slot || 0;
 
   this.slotMarks = "◯".repeat(this.slot);
+
+  var skillCols = this.skills.reduce(function(array, skill) { return array.concat(skill.cols); }, []);
+  this.cols = ['', this.slot.toString()].concat(skillCols);
 };
 
 $(document).ready(function () {
@@ -182,9 +186,17 @@ $(document).ready(function () {
               backgroundColor: 'rgb(' + c + ', ' + c + ', ' + c + ')'
             }
           };
+        },
+        csv: function() {
+          return this.items.map(function(item) {
+            return item.cols.join(',');
+          }).join("\r\n");
         }
       },
       methods: {
+        selectAllCsv: function() {
+          this.$els.csvTextArea.select();
+        },
         addItem: function(data) {
           this.items.unshift(new Item(data));
         },

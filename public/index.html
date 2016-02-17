@@ -51,6 +51,8 @@
       <table class="table table-striped table-hover table-condensed">
         <tr is="item" :item="item" v-for="item in items"></tr>
       </table>
+
+      <textarea cols="30" rows="10" @focus="selectAllCsv" readonly v-el:csv-text-area>{{csv}}</textarea>
     </div>
   </div>
 </div>
