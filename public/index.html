@@ -24,11 +24,7 @@
         <div class="capture-timer" :style="{ width: timerProgress + '%' }"></div>
       </div>
 
-      <div class="btn-group">
-        <button type="button" class="capture-button btn btn-default btn-lg" @mousedown="startCapture" @mouseup="stopCapture">
-          <span class="glyphicon glyphicon-record"></span>
-        </button>
-      </div>
+      <button type="button" class="btn btn-default btn-lg" @keydown.16="startCapture" @keyup.16="stopCapture">shift</button>
 
       <table class="table table-striped table-hover table-condensed">
         <tr v-for="item in items">

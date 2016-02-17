@@ -169,10 +169,18 @@ $(document).ready(function () {
         }
       },
       methods: {
+        keyDown: function(e) {
+          console.log('down', e);
+        },
+        keyUp: function (e) {
+          console.log('up', e);
+        },
         addItem: function (data) {
           this.items.unshift(new Item(data));
         },
         startCapture: function() {
+          if(this.timerStopper) return;
+
           var self = this;
 
           this.recorder.record();
