@@ -52,7 +52,7 @@ var startMicLevelDetection = function(source, callback) {
     for (var i = 0; i < buf.length; i++) {
       bufSum += buf[i];
     }
-    var level = bufSum / buf.length;
+    var level = Math.floor(bufSum / buf.length);
     callback(level);
   };
 
@@ -158,8 +158,14 @@ $(document).ready(function () {
         });
       },
       computed: {
-        micLevelEm: function() {
-          return 1 + (this.micLevel / 256 * 2);
+        micLevelIcon: function() {
+          var c = 256 - this.micLevel;
+          return {
+            glyphicon: this.micLevel == 0 ? 'volume-off' : 'volume-up',
+            style: {
+              backgroundColor: 'rgb(' + c + ', ' + c + ', ' + c + ')'
+            }
+          };
         }
       },
       methods: {
