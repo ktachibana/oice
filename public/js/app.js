@@ -143,6 +143,7 @@ $(document).ready(function () {
     var input = audioContext.createMediaStreamSource(stream);
 
     Vue.config.debug = true;
+
     Vue.component('skill', {
       template: '#skill-template',
       props: ['skill'],
@@ -150,10 +151,17 @@ $(document).ready(function () {
         this.skill = this.skill || Skill.empty;
       }
     });
+
     Vue.component('item', {
       template: '#item-template',
-      props: ['item']
+      props: ['item', 'onDelete'],
+      computed: {
+        isDeletable: function() {
+          return !!this.onDelete;
+        }
+      }
     });
+
     var view = new Vue({
       el: '#vue-app',
       data: {
@@ -169,13 +177,10 @@ $(document).ready(function () {
         startMicLevelDetection(input, function(micLevel) {
           self.micLevel = micLevel;
         });
-
-        this.recorder = new Recorder(input, {
-          workerPath: './js/recorderjs/recorderWorker.js'
-        });
       },
       attached: function () {
         this.$els.keyboard.focus();
+        this.addItem({ skills: [{ route: '剣術', point: 1 }], slot: 0 });
       },
       computed: {
         micLevelIcon: function() {
@@ -206,12 +211,22 @@ $(document).ready(function () {
             this.candidateItem = null;
           }
         },
+        deleteItem: function(index) {
+          var self = this;
+          return function() {
+            self.items.splice(index, 1);
+          };
+        },
+        getFocus: function() {
+          this.$els.keyboard.focus();
+        },
         startCapture: function() {
           if(this.timerStopper) return;
 
-          var self = this;
-
+          this.recorder = new Recorder(input);
           this.recorder.record();
+
+          var self = this;
           this.timerStopper = startLimitTimer(5000, {
             progress: function(percent) {
               self.timerProgress = percent;
@@ -224,6 +239,8 @@ $(document).ready(function () {
           //$('#captureButton').addClass('on');
         },
         stopCapture: function() {
+          if(!this.timerStopper) return;
+
           this.timerStopper();
           this.timerStopper = null;
           this.timerProgress = 0;
@@ -249,8 +266,6 @@ $(document).ready(function () {
             if (xhr.status == 204) return;
             self.candidateItem = new Item(data);
           });
-
-          this.recorder.clear();
 
           $('#captureButton').removeAttr('disabled');
         }

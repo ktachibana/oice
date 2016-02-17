@@ -21,6 +21,7 @@
         <td is="skill" :skill="item.skills[0]"></td>
         <td is="skill" :skill="item.skills[1]"></td>
         <td>{{item.slotMarks}}</td>
+        <td v-if="isDeletable"><a @click="onDelete"><span class="glyphicon glyphicon-remove"></span></a></td>
       </tr>
     </template>
 
@@ -42,6 +43,7 @@
               @keydown.16="startCapture"
               @keyup.16="stopCapture"
               @keypress.enter="decideItem"
+              @click="getFocus"
               v-el:keyboard>shift</button>
 
       <table class="table table-bordered" v-if="candidateItem">
@@ -49,7 +51,7 @@
       </table>
 
       <table class="table table-striped table-hover table-condensed">
-        <tr is="item" :item="item" v-for="item in items"></tr>
+        <tr is="item" :item="item" v-for="item in items" :on-delete="deleteItem($index)"></tr>
       </table>
 
       <textarea cols="30" rows="10" @focus="selectAllCsv" readonly v-el:csv-text-area>{{csv}}</textarea>
@@ -59,7 +61,7 @@
 
 <script src="js/jquery-2.1.0.min.js"></script>
 <script src="js/vue.js"></script>
-<script src="js/recorderjs/recorder.js"></script>
+<script src="js/recorder.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>
