@@ -157,6 +157,9 @@ $(document).ready(function () {
           workerPath: './js/recorderjs/recorderWorker.js'
         });
       },
+      attached: function () {
+        this.$els.keyboard.focus();
+      },
       computed: {
         micLevelIcon: function() {
           var c = 256 - this.micLevel;
