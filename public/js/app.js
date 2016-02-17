@@ -103,6 +103,7 @@ var Skill = function (attrs) {
   this.route = attrs.route || '';
   this.point = attrs.point || null;
 };
+Skill.empty = new Skill({ route: '', point: null });
 
 var Item = function (attrs) {
   this.skills = attrs.skills.map(function (skill) {
@@ -138,6 +139,17 @@ $(document).ready(function () {
     var input = audioContext.createMediaStreamSource(stream);
 
     Vue.config.debug = true;
+    Vue.component('skill', {
+      template: '#skill-template',
+      props: ['skill'],
+      created: function() {
+        this.skill = this.skill || Skill.empty;
+      }
+    });
+    Vue.component('item', {
+      template: '#item-template',
+      props: ['item']
+    });
     var view = new Vue({
       el: '#vue-app',
       data: {
