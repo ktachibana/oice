@@ -189,6 +189,7 @@ $(document).ready(function () {
         },
         stopCapture: function() {
           this.timerStopper();
+          this.timerStopper = null;
           this.timerProgress = 0;
           this.recorder.stop();
           this.recorder.exportWAV(this.wavExported);
