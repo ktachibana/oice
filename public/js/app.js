@@ -154,6 +154,7 @@ $(document).ready(function () {
       el: '#vue-app',
       data: {
         recorder: null,
+        candidateItem: null,
         items: [],
         micLevel: 0,
         timerStopper: null,
@@ -184,14 +185,14 @@ $(document).ready(function () {
         }
       },
       methods: {
-        keyDown: function(e) {
-          console.log('down', e);
-        },
-        keyUp: function (e) {
-          console.log('up', e);
-        },
-        addItem: function (data) {
+        addItem: function(data) {
           this.items.unshift(new Item(data));
+        },
+        decideItem: function() {
+          if(this.candidateItem) {
+            this.addItem(this.candidateItem);
+            this.candidateItem = null;
+          }
         },
         startCapture: function() {
           if(this.timerStopper) return;
@@ -234,7 +235,7 @@ $(document).ready(function () {
             contentType: false
           }).done(function (data, _, xhr) {
             if (xhr.status == 204) return;
-            self.addItem(data);
+            self.candidateItem = new Item(data);
           });
 
           this.recorder.clear();
