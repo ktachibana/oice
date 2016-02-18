@@ -106,7 +106,7 @@ var Skill = function (attrs) {
 };
 Skill.empty = new Skill({ route: '', point: null });
 
-var Item = function (attrs) {
+var Charm = function (attrs) {
   this.skills = attrs.skills.map(function (skill) {
     return new Skill(skill);
   });
@@ -152,9 +152,9 @@ $(document).ready(function () {
       }
     });
 
-    Vue.component('item', {
-      template: '#item-template',
-      props: ['item', 'onDelete'],
+    Vue.component('charm', {
+      template: '#charm-template',
+      props: ['charm', 'onDelete'],
       computed: {
         isDeletable: function() {
           return !!this.onDelete;
@@ -167,8 +167,8 @@ $(document).ready(function () {
       data: {
         recorder: null,
         recordedVoice: null,
-        candidateItem: null,
-        items: [],
+        candidateCharm: null,
+        charms: [],
         micLevel: 0,
         timerStopper: null,
         timerProgress: 0
@@ -193,8 +193,8 @@ $(document).ready(function () {
           };
         },
         csv: function() {
-          return this.items.map(function(item) {
-            return item.cols.join(',');
+          return this.charms.map(function(charm) {
+            return charm.cols.join(',');
           }).join("\r\n");
         }
       },
@@ -202,20 +202,20 @@ $(document).ready(function () {
         selectAllCsv: function() {
           this.$els.csvTextArea.select();
         },
-        addItem: function(data) {
-          this.items.unshift(new Item(data));
+        addCharm: function(data) {
+          this.charms.unshift(new Charm(data));
         },
-        decideItem: function() {
-          if(this.candidateItem) {
-            this.addItem(this.candidateItem);
-            this.candidateItem = null;
+        decideCharm: function() {
+          if(this.candidateCharm) {
+            this.addCharm(this.candidateCharm);
+            this.candidateCharm = null;
             this.recordedVoice = null;
           }
         },
-        deleteItem: function(index) {
+        deleteCharm: function(index) {
           var self = this;
           return function() {
-            self.items.splice(index, 1);
+            self.charms.splice(index, 1);
           };
         },
         getFocus: function() {
@@ -263,7 +263,7 @@ $(document).ready(function () {
             contentType: false
           }).done(function (data, _, xhr) {
             if (xhr.status == 204) return;
-            self.candidateItem = new Item(data);
+            self.candidateCharm = new Charm(data);
           });
         }
       }
