@@ -110,6 +110,7 @@ var Charm = function (attrs) {
   this.skills = attrs.skills.map(function (skill) {
     return new Skill(skill);
   });
+  if(this.skills.length < 2) this.skills.push(Skill.empty);
   this.slot = attrs.slot || 0;
 
   this.slotMarks = "◯".repeat(this.slot);
@@ -146,10 +147,7 @@ $(document).ready(function () {
 
     Vue.component('skill', {
       template: '#skill-template',
-      props: ['skill'],
-      created: function() {
-        this.skill = this.skill || new Skill({ route: '', point: null });
-      }
+      props: ['skill']
     });
 
     Vue.component('charm', {
