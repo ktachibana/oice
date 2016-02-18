@@ -148,7 +148,7 @@ $(document).ready(function () {
       template: '#skill-template',
       props: ['skill'],
       created: function() {
-        this.skill = this.skill || Skill.empty;
+        this.skill = this.skill || new Skill({ route: '', point: null });
       }
     });
 
@@ -166,6 +166,7 @@ $(document).ready(function () {
       el: '#vue-app',
       data: {
         recorder: null,
+        recordedVoice: null,
         candidateItem: null,
         items: [],
         micLevel: 0,
@@ -180,7 +181,6 @@ $(document).ready(function () {
       },
       attached: function () {
         this.$els.keyboard.focus();
-        this.addItem({ skills: [{ route: '剣術', point: 1 }], slot: 0 });
       },
       computed: {
         micLevelIcon: function() {
@@ -209,6 +209,7 @@ $(document).ready(function () {
           if(this.candidateItem) {
             this.addItem(this.candidateItem);
             this.candidateItem = null;
+            this.recordedVoice = null;
           }
         },
         deleteItem: function(index) {
@@ -235,8 +236,6 @@ $(document).ready(function () {
               self.stopCapture();
             }
           });
-
-          //$('#captureButton').addClass('on');
         },
         stopCapture: function() {
           if(!this.timerStopper) return;
@@ -246,13 +245,13 @@ $(document).ready(function () {
           this.timerProgress = 0;
           this.recorder.stop();
           this.recorder.exportWAV(this.wavExported);
-
-          //$('#captureButton').removeClass('on');
-          //$('#captureButton').attr('disabled', 'disabled');
         },
         wavExported: function (blob) {
           var form = new FormData();
           form.append('file', blob);
+
+          if(this.recordedVoice) URL.revokeObjectURL(this.recordedVoice);
+          this.recordedVoice = URL.createObjectURL(blob);
 
           var self = this;
           $.ajax({
@@ -266,13 +265,9 @@ $(document).ready(function () {
             if (xhr.status == 204) return;
             self.candidateItem = new Item(data);
           });
-
-          $('#captureButton').removeAttr('disabled');
         }
       }
     });
-
-    $('#captureButton').removeAttr('disabled');
   }, function (e) {
     alert("Mic access error!" + e);
     console.error(e);
