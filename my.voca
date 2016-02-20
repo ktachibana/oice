@@ -1,0 +1,191 @@
+% PLUS
++	p u r a s u
+	
+% MINUS
+-	m a i n a s u
+	
+% NUM_TO_3
+0	z e r o
+1	i ch i
+2	n i:
+2	n i
+3	s a N
+	
+% NUM_FROM_4
+4	y o N
+5	g o:
+6	r o k u
+7	n a n a
+8	h a ch i
+9	k u:
+9	ky u:
+10	j u:
+	
+% SLOT_TITLE
+slot	s u r o q t o
+slot	s u r o
+	
+% SKILL_ROUTE
+溜め短縮	t a m e t a N sh u k u
+達人	t a ts u j i N
+痛撃	ts u: g e k i
+重撃	j u: g e k i
+KO	k e: o:
+減気攻撃	g e N k i k o: g e k i
+特殊攻撃	t o k u sh u k o: g e k i
+火属性攻撃	h i z o k u s e: k o: g e k i
+水属性攻撃	m i z u z o k u s e: k o: g e k i
+雷属性攻撃	k a m i n a r i z o k u s e: k o: g e k i
+氷属性攻撃	k o: r i z o k u s e i k o: g e k i
+龍属性攻撃	ry u: z o k u s e i k o: g e k i
+砲術	h o: j u ts u
+底力	s o k o j i k a r a
+逆境	gy a q ky o:
+本気	h o N k i
+闘魂	t o: k o N
+無傷	m u k i z u
+属性攻撃	z o k u s e: k o: g e k i
+乗り	n o r i
+跳躍	ch o: y a k u
+特殊会心	t o k u sh u k a i sh i N
+属性会心	z o k u s e: k a i sh i N
+連撃	r e N g e k i
+寒冷適応	k a N r e: t e k i o:
+炎熱適応	e N n e ts u t e k i o:
+会心強化	k a i sh i N ky o: k a
+窮地	ky u: ch i
+逆上	gy a k u j o:
+チャンス	ch a N s u
+無心	m u sh i N
+研磨術	k e N m a j u ts u
+	
+斬れ味	k i r e a j i
+匠	t a k u m i
+研ぎ師	t o g i sh i
+抜刀減気	b a q t o: g e N k i
+抜刀会心	b a q t o: k a i sh i N
+剣術	k e N j u ts u
+鈍器	d o N k i
+	
+装填速度	s o: t e N s o k u d o
+装填数	s o: t e N s u:
+速射	s o k u sh a
+反動	h a N d o:
+精密射撃	s e: m i ts u sh a g e k i
+通常弾強化	ts u: j o: d a N ky o: k a
+貫通弾強化	k a N ts u: d a N ky o: k a
+散弾強化	s a N d a N ky o: k a
+通常弾追加	ts u: j o: d a N ts u i k a
+貫通弾追加	k a N ts u: d a N ts u i k a
+散弾追加	s a N d a N ts u i k a
+榴弾追加	ry u: d a N ts u i k a
+拡散弾追加	k a k u s a N d a N ts u i k a
+毒瓶追加	d o k u b i N ts u i k a
+麻痺瓶追加	m a h i b i N ts u i k a
+睡眠瓶追加	s u i m i N b i N ts u i k a
+強撃瓶追加	ky o: g e k i b i N ts u i k a
+接撃瓶追加	s e ts u g e k i b i N ts u i k a
+減気瓶追加	g e N k i b i N ts u i k a
+爆破瓶追加	b a k u h a b i N ts u i k a
+射法	sh a h o:
+重撃弾強化	j u: g e k i d a N ky o: k a
+変則射撃	h e N s o k u sh a g e k i
+属強瓶追加	z o q ky o: b i N ts u i k a
+弾薬節約	d a N y a k u ts u i k a
+	
+回復速度	k a i f u k u s o k u d o
+加護	k a g o
+納刀	n o: t o:
+回避性能	k a i h i s e: n o:
+回避距離	k a i h i ky o r i
+気配	k e h a i
+ガード性能	g a: d o s e: n o:
+ガード強化	g a: d o ky o: k a
+根性	k o N j o:
+泡沫	h i m a ts u
+英雄の盾	e: y u: n o t a t e
+	
+攻撃	k o: g e k i
+防御	b o: gy o
+体力	t a i ry o k u
+火耐性	h i t a i s e:
+水耐性	m i z u t a i s e:
+雷耐性	k a m i n a r i t a i s e:
+氷耐性	k o: r i t a i s e:
+龍耐性	ry u: t a i s e:
+	
+毒	d o k u
+麻痺	m a h i
+睡眠	s u i m i N
+気絶	k i z e ts u
+対防御DOWN	t a i b o: gy o d a u N
+聴覚保護	ch o: k a k u h o g o
+風圧	f u: a ts u
+耐震	t a i sh i N
+盗み無効	n u s u m i m u k o:
+属性耐性	z o k u s e: t a i s e:
+細菌学	s a i k i N g a k u
+狂撃耐性	ky o: g e k i t a i s e:
+裂傷	r e q sh o:
+だるま	d a r u m a
+	
+笛	f u e
+爆弾強化	b a k u d a N ky o: k a
+回復量	k a i f u k u ry o:
+広域	k o: i k i
+効果持続	k o: k a j i z o k u
+食いしん坊	k u i sh i N b o:
+食事	sh o k u j i
+肉食	n i k u sh o k u
+高速設置	k o: s o k u s e q ch i
+調合成功率	ch o: g o: s e: k o: r i ts u
+調合数	ch o: g o: s u:
+茸食	t a k e sh o k u
+節食	s e q sh o k u
+野草知識	y a s o: ch i sh i k i
+	
+体術	t a i j u ts u
+耐暑	t a i sh o
+耐寒	t a i k a N
+スタミナ	s u t a m i n a
+気力回復	k i ry o k u k a i f u k u
+腹減り	h a r a h e r i
+採取	s a i sh u
+気まぐれ	k i m a g u r e
+ハチミツ	h a ch i m i ts u
+護石王	g o s e k i o:
+運気	u N k i
+剥ぎ取り	h a g i t o r i
+捕獲	h o k a k u
+観察眼	k a N s a ts u g a N
+千里眼	s e N r i g a N
+運搬	u N p a N
+狩人	k a ry u: d o
+采配	s a i h a i
+号令	g o: r e:
+	
+ベルナ	b e r u n a
+ココット	k o k o q t o
+ポッケ	p o q k e
+ユクモ	y u k u m o
+北辰納豆流	h o k u sh i N n a q t o: ry u:
+	
+大雪主	o o y u k i n u sh i
+紅兜	b e n i k a b u t o
+紫毒姫	sh i d o k u h i
+矛砕	h o k o k u d a k i
+岩穿	i w a u g a ch i
+黒炎王	k o k u e N o:
+荒鉤爪	a r a k a g i z u m e
+金雷公	k i N r a i k o:
+隻眼	s e k i g a N
+宝纏	h o: t e N
+白疾風	sh i r o h a y a t e
+燼滅刃	k a i m e ts u j i N
+	
+% NS_B
+<s>	silB
+% NS_E
+</s>	silE
+% NOISE
+<sp>	sp

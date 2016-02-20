@@ -1,3 +1,5 @@
+var recognize = require('./public/js/recognize');
+
 window.URL = window.URL || window.webkitURL;
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia || navigator.msGetUserMedia;
@@ -252,17 +254,35 @@ $(document).ready(function () {
           this.recordedVoice = URL.createObjectURL(blob);
 
           var self = this;
-          $.ajax({
-            url: '/',
-            type: 'POST',
-            data: form,
-            dataType: 'json',
-            processData: false,
-            contentType: false
-          }).done(function (data, _, xhr) {
-            if (xhr.status == 204) return;
-            self.candidateCharm = new Charm(data);
+          recognize(blob).then(function(output) {
+            var pattern = /sentence1: <s> (.+) <\/s>/;
+            var match = pattern.exec(output);
+            if(!match) return;
+            var sentence = match[1];
+            var words = sentence.split(/\s+/);
+            var skills = [];
+            while(words[0] != 'slot' && words.length) {
+              var route = words.shift();
+              var sign = ((['+', '-'].indexOf(words[0]) != -1) ? words.shift() : '');
+              var point = parseInt(sign + words.shift());
+
+              skills.push({ route: route, point: point });
+            }
+            var slot = parseInt(words.pop() || 0);
+
+            self.candidateCharm = new Charm({ skills: skills, slot: slot });
           });
+          //$.ajax({
+          //  url: '/',
+          //  type: 'POST',
+          //  data: form,
+          //  dataType: 'json',
+          //  processData: false,
+          //  contentType: false
+          //}).done(function (data, _, xhr) {
+          //  if (xhr.status == 204) return;
+          //  self.candidateCharm = new Charm(data);
+          //});
         }
       }
     });
