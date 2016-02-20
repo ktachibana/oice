@@ -1,4 +1,6 @@
-var recognize = require('./public/js/recognize');
+var $ = require('jquery');
+var Vue = require('vue');
+var Recorder = require('recorderjs');
 
 window.URL = window.URL || window.webkitURL;
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
@@ -99,6 +101,24 @@ var startLimitTimer = function(limitTimeInMSec, options) {
   return stop;
 };
 
+function blobToBuffer(blob) {
+  return new Promise(function(resolve, reject) {
+    var reader = new FileReader();
+
+    reader.addEventListener('loadend', function(event) {
+      if (event.error) {
+        reject(event.error);
+      } else {
+        resolve(new Buffer(reader.result));
+      }
+
+      reader.removeEventListener('loadend', blobToBuffer, false);
+    }, false);
+
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
 
 var Skill = function (attrs) {
   attrs = attrs || {};
@@ -122,17 +142,6 @@ var Charm = function (attrs) {
 };
 
 $(document).ready(function () {
-  //var ua = navigator.userAgent;
-  //if (ua.search(/iPhone/) != -1 || ua.search(/iPad/) != -1 ||
-  //  ua.search(/iPod/) != -1 || ua.search(/Android/) != -1) {
-  //  $("#captureButton").bind("touchstart", function (e) {
-  //    captureStart();
-  //  });
-  //  $("#captureButton").bind("touchend", function (e) {
-  //    captureStop();
-  //  });
-  //}
-
   if (!navigator.getUserMedia) {
     alert("WebRTC(getUserMedia) is not supported.");
     return;
@@ -177,6 +186,9 @@ $(document).ready(function () {
         var self = this;
         startMicLevelDetection(input, function(micLevel) {
           self.micLevel = micLevel;
+        });
+        ipc.on('recognized', function(event, charmData) {
+          self.candidateCharm = new Charm(charmData);
         });
       },
       attached: function () {
@@ -254,35 +266,9 @@ $(document).ready(function () {
           this.recordedVoice = URL.createObjectURL(blob);
 
           var self = this;
-          recognize(blob).then(function(output) {
-            var pattern = /sentence1: <s> (.+) <\/s>/;
-            var match = pattern.exec(output);
-            if(!match) return;
-            var sentence = match[1];
-            var words = sentence.split(/\s+/);
-            var skills = [];
-            while(words[0] != 'slot' && words.length) {
-              var route = words.shift();
-              var sign = ((['+', '-'].indexOf(words[0]) != -1) ? words.shift() : '');
-              var point = parseInt(sign + words.shift());
-
-              skills.push({ route: route, point: point });
-            }
-            var slot = parseInt(words.pop() || 0);
-
-            self.candidateCharm = new Charm({ skills: skills, slot: slot });
+          blobToBuffer(blob).then(function(buffer) {
+            ipc.send('recognize', buffer);
           });
-          //$.ajax({
-          //  url: '/',
-          //  type: 'POST',
-          //  data: form,
-          //  dataType: 'json',
-          //  processData: false,
-          //  contentType: false
-          //}).done(function (data, _, xhr) {
-          //  if (xhr.status == 204) return;
-          //  self.candidateCharm = new Charm(data);
-          //});
         }
       }
     });

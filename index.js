@@ -1,6 +1,8 @@
 'use strict';
 const electron = require('electron');
+const ipc = electron.ipcMain;
 const app = electron.app;
+const recognizeSkill = require('./recognizeSkill');
 
 // report crashes to the Electron project
 require('crash-reporter').start();
@@ -18,9 +20,13 @@ function onClosed() {
 }
 
 function createMainWindow() {
-	const win = new electron.BrowserWindow({
+  const win = new electron.BrowserWindow({
 		width: 600,
-		height: 400
+		height: 400,
+    webPreferences: {
+      nodeIntegration: false,
+      preload: __dirname + '/preload.js'
+    }
 	});
 
 	win.loadURL(`file://${__dirname}/index.html`);
@@ -37,4 +43,10 @@ app.on('activate', () => {
 
 app.on('ready', () => {
 	mainWindow = createMainWindow();
+});
+
+ipc.on('recognize', function(event, buffer) {
+  recognizeSkill(buffer).then(function(charm) {
+    event.sender.send('recognized', charm);
+  });
 });
