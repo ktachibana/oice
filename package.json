@@ -14,8 +14,9 @@
     "start": "electron .",
     "build": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=$npm_package_electronVersion"
   },
+  "main": "main/index.js",
   "files": [
-    "index.js",
+    "main",
     "index.html",
     "index.css"
   ],

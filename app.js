@@ -1,6 +1,7 @@
 var $ = require('jquery');
 var Vue = require('vue');
 var Recorder = require('recorderjs');
+var recognizeSkill = require('./recognizeSkill');
 
 window.URL = window.URL || window.webkitURL;
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
@@ -101,24 +102,6 @@ var startLimitTimer = function(limitTimeInMSec, options) {
   return stop;
 };
 
-function blobToBuffer(blob) {
-  return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
-
-    reader.addEventListener('loadend', function(event) {
-      if (event.error) {
-        reject(event.error);
-      } else {
-        resolve(new Buffer(reader.result));
-      }
-
-      reader.removeEventListener('loadend', blobToBuffer, false);
-    }, false);
-
-    reader.readAsArrayBuffer(blob);
-  });
-}
-
 
 var Skill = function (attrs) {
   attrs = attrs || {};
@@ -186,9 +169,6 @@ $(document).ready(function () {
         var self = this;
         startMicLevelDetection(input, function(micLevel) {
           self.micLevel = micLevel;
-        });
-        ipc.on('recognized', function(event, charmData) {
-          self.candidateCharm = new Charm(charmData);
         });
       },
       attached: function () {
@@ -266,8 +246,8 @@ $(document).ready(function () {
           this.recordedVoice = URL.createObjectURL(blob);
 
           var self = this;
-          blobToBuffer(blob).then(function(buffer) {
-            ipc.send('recognize', buffer);
+          recognizeSkill(blob).then(function(charmData) {
+            self.candidateCharm = new Charm(charmData);
           });
         }
       }
