@@ -9,11 +9,18 @@
     "email": "deadzone@be.to"
   },
   "electronVersion": "0.36.0",
+  "watch": {
+    "build:my": {
+      "patterns": "my.{yomi,grammar}",
+      "extensions": "yomi,grammar"
+    }
+  },
   "scripts": {
     "test": "xo",
     "start": "electron .",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=$npm_package_electronVersion",
-    "build": "sh build.sh"
+    "build:my": "./build.sh",
+    "watch": "npm-watch"
   },
   "main": "main/index.js",
   "files": [
@@ -32,6 +39,7 @@
     "electron-packager": "^5.0.0",
     "electron-prebuilt": "^0.36.0",
     "jquery": "^2.2.0",
+    "npm-watch": "^0.1.1",
     "recorderjs": "git+https://github.com/mattdiamond/Recorderjs.git",
     "vue": "^1.0.16",
     "webpack": "^1.12.13",
