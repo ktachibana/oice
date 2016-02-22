@@ -1,7 +1,7 @@
 node_modules
 /dist
 
-my.dfa
-my.dict
-my.term
-my.voca
+grammar/charm.dfa
+grammar/charm.dict
+grammar/charm.term
+grammar/charm.voca

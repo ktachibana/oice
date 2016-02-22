@@ -10,8 +10,8 @@
   },
   "electronVersion": "0.36.0",
   "watch": {
-    "build:my": {
-      "patterns": "my.{yomi,grammar}",
+    "build:grammar": {
+      "patterns": "grammar/charm.{yomi,grammar}",
       "extensions": "yomi,grammar"
     }
   },
@@ -19,7 +19,7 @@
     "test": "xo",
     "start": "electron .",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=$npm_package_electronVersion",
-    "build:my": "./build.sh",
+    "build:grammar": "cd grammar; ./build.sh",
     "watch": "npm-watch"
   },
   "main": "main/index.js",
