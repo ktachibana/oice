@@ -1,2 +1,7 @@
 node_modules
 /dist
+
+my.dfa
+my.dict
+my.term
+my.voca
