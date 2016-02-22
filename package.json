@@ -20,6 +20,7 @@
     "start": "electron .",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=$npm_package_electronVersion",
     "build:grammar": "cd grammar; ./build.sh",
+    "build": "npm run build:grammar & webpack",
     "watch": "npm-watch"
   },
   "main": "main/index.js",
