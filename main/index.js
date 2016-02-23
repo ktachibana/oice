@@ -45,8 +45,8 @@ app.on('ready', () => {
 	mainWindow = createMainWindow();
 });
 
-ipc.on('recognize', function(event, buffer) {
-  recognizeSkill(buffer).then(function(charm) {
+ipc.on('recognize', (event, buffer) => {
+  recognizeSkill(buffer).then((charm) => {
     event.returnValue = charm;
   });
 });

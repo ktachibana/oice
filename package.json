@@ -21,7 +21,7 @@
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=$npm_package_electronVersion",
     "build:grammar": "cd grammar; ./build.sh",
     "build": "npm run build:grammar & webpack",
-    "watch": "npm-watch"
+    "watch": "npm-watch & webpack -w"
   },
   "main": "main/index.js",
   "files": [
@@ -34,9 +34,13 @@
     "electron"
   ],
   "dependencies": {
+    "babel-core": "^6.5.2",
+    "babel-loader": "^6.2.3",
+    "babel-preset-es2015": "^6.5.0",
     "electron-debug": "^0.5.0"
   },
   "devDependencies": {
+    "babel-cli": "^6.5.1",
     "electron-packager": "^5.0.0",
     "electron-prebuilt": "^0.36.0",
     "jquery": "^2.2.0",

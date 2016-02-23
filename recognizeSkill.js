@@ -1,8 +1,8 @@
 function blobToBuffer(blob) {
-  return new Promise(function(resolve, reject) {
-    var reader = new FileReader();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
 
-    reader.addEventListener('loadend', function(event) {
+    reader.addEventListener('loadend', event => {
       if (event.error) {
         reject(event.error);
       } else {
@@ -17,9 +17,9 @@ function blobToBuffer(blob) {
 }
 
 module.exports = function(blob) {
-  return new Promise(function(resolve, reject) {
-    blobToBuffer(blob).then(function(buffer) {
-      var charmData = ipc.sendSync('recognize', buffer);
+  return new Promise((resolve, reject) => {
+    blobToBuffer(blob).then(buffer => {
+      const charmData = ipc.sendSync('recognize', buffer);
       resolve(charmData);
     });
   });

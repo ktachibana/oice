@@ -1,14 +1,14 @@
-var $ = require('jquery');
-var Vue = require('vue');
-var Recorder = require('recorderjs');
-var recognizeSkill = require('./recognizeSkill');
+import $ from 'jquery';
+import Vue from 'vue';
+import Recorder from 'recorderjs';
+import recognizeSkill from './recognizeSkill';
 
 window.URL = window.URL || window.webkitURL;
 navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
   navigator.mozGetUserMedia || navigator.msGetUserMedia;
 window.AudioContext = window.AudioContext || window.webkitAudioContext;
 
-var now = window.performance && (
+const now = window.performance && (
     performance.now || performance.mozNow || performance.msNow ||
     performance.oNow || performance.webkitNow
   );
@@ -44,20 +44,17 @@ window.cancelAnimationFrame = (function () {
 }());
 
 var startMicLevelDetection = function(source, callback) {
-  var analyser = source.context.createAnalyser();
+  const analyser = source.context.createAnalyser();
   analyser.fftSize = 32;
   analyser.smoothingTimeConstant = 0.3;
   source.connect(analyser);
 
-  var buf = new Uint8Array(16);
-  var onTimer = function () {
+  const buf = new Uint8Array(16);
+  const onTimer = () => {
     analyser.getByteFrequencyData(buf);
 
-    var bufSum = 0;
-    for (var i = 0; i < buf.length; i++) {
-      bufSum += buf[i];
-    }
-    var level = Math.floor(bufSum / buf.length);
+    const bufSum = buf.reduce((sum, value) => sum + value);
+    const level = Math.floor(bufSum / buf.length);
     callback(level);
   };
 
@@ -66,26 +63,26 @@ var startMicLevelDetection = function(source, callback) {
 
 var startLimitTimer = function(limitTimeInMSec, options) {
   options = options || {};
-  var limitCallback = options.limit || function() {};
-  var progressCallback = options.progress || function(percent) {};
+  const limitCallback = options.limit || function() {};
+  const progressCallback = options.progress || function(percent) {};
 
-  var timer = null;
-  var timeFromStart = 0;
-  var timeAtPrevFrame = getTime();
+  let timer = null;
+  let timeFromStart = 0;
+  let timeAtPrevFrame = getTime();
 
-  var stop = function () {
+  const stop = () => {
     if (timer) {
       cancelAnimationFrame(timer);
       timer = null;
     }
   };
 
-  var updateFrame = function () {
-    var now = getTime();
+  const updateFrame = () => {
+    const now = getTime();
     timeFromStart += (now - timeAtPrevFrame);
     timeAtPrevFrame = now;
 
-    var percent = Math.floor((timeFromStart / limitTimeInMSec) * 100);
+    const percent = Math.floor((timeFromStart / limitTimeInMSec) * 100);
     if (100 <= percent) {
       stop();
       progressCallback(100);
@@ -102,29 +99,30 @@ var startLimitTimer = function(limitTimeInMSec, options) {
   return stop;
 };
 
-
-var Skill = function (attrs) {
-  attrs = attrs || {};
-  this.route = attrs.route || '';
-  this.point = attrs.point || null;
-  this.cols = [this.route, (this.point || '').toString()];
-};
+class Skill {
+  constructor(attrs) {
+    attrs = attrs || {};
+    this.route = attrs.route || '';
+    this.point = attrs.point || null;
+    this.cols = [this.route, (this.point || '').toString()];
+  }
+}
 Skill.empty = new Skill({ route: '', point: null });
 
-var Charm = function (attrs) {
-  this.skills = attrs.skills.map(function (skill) {
-    return new Skill(skill);
-  });
-  if(this.skills.length < 2) this.skills.push(Skill.empty);
-  this.slot = attrs.slot || 0;
+class Charm {
+  constructor (attrs) {
+    this.skills = attrs.skills.map((skill) => new Skill(skill));
+    if(this.skills.length < 2) this.skills.push(Skill.empty);
+    this.slot = attrs.slot || 0;
 
-  this.slotMarks = "◯".repeat(this.slot);
+    this.slotMarks = "◯".repeat(this.slot);
 
-  var skillCols = this.skills.reduce(function(array, skill) { return array.concat(skill.cols); }, []);
-  this.cols = ['', this.slot.toString()].concat(skillCols);
-};
+    const skillCols = this.skills.reduce((array, skill) => array.concat(skill.cols), []);
+    this.cols = ['', this.slot.toString()].concat(skillCols);
+  }
+}
 
-$(document).ready(function () {
+$(document).ready(() => {
   if (!navigator.getUserMedia) {
     alert("WebRTC(getUserMedia) is not supported.");
     return;
@@ -133,9 +131,9 @@ $(document).ready(function () {
   navigator.getUserMedia({
     video: false,
     audio: true
-  }, function (stream) {
-    var audioContext = new AudioContext();
-    var input = audioContext.createMediaStreamSource(stream);
+  }, (stream) => {
+    const audioContext = new AudioContext();
+    const input = audioContext.createMediaStreamSource(stream);
 
     Vue.config.debug = true;
 
@@ -154,7 +152,7 @@ $(document).ready(function () {
       }
     });
 
-    var view = new Vue({
+    new Vue({
       el: '#vue-app',
       data: {
         recorder: null,
@@ -166,9 +164,8 @@ $(document).ready(function () {
         timerProgress: 0
       },
       created: function() {
-        var self = this;
-        startMicLevelDetection(input, function(micLevel) {
-          self.micLevel = micLevel;
+        startMicLevelDetection(input, (micLevel) => {
+          this.micLevel = micLevel;
         });
       },
       attached: function () {
@@ -176,7 +173,7 @@ $(document).ready(function () {
       },
       computed: {
         micLevelIcon: function() {
-          var c = 256 - this.micLevel;
+          const c = 256 - this.micLevel;
           return {
             glyphicon: this.micLevel == 0 ? 'volume-off' : 'volume-up',
             style: {
@@ -185,9 +182,7 @@ $(document).ready(function () {
           };
         },
         csv: function() {
-          return this.charms.map(function(charm) {
-            return charm.cols.join(',');
-          }).join("\r\n");
+          return this.charms.map(charm => charm.cols.join(',')).join("\r\n");
         }
       },
       methods: {
@@ -205,10 +200,7 @@ $(document).ready(function () {
           }
         },
         deleteCharm: function(index) {
-          var self = this;
-          return function() {
-            self.charms.splice(index, 1);
-          };
+          return () => { this.charms.splice(index, 1); };
         },
         getFocus: function() {
           this.$els.keyboard.focus();
@@ -219,13 +211,12 @@ $(document).ready(function () {
           this.recorder = new Recorder(input);
           this.recorder.record();
 
-          var self = this;
           this.timerStopper = startLimitTimer(5000, {
-            progress: function(percent) {
-              self.timerProgress = percent;
+            progress: (percent) => {
+              this.timerProgress = percent;
             },
-            limit: function() {
-              self.stopCapture();
+            limit: () => {
+              this.stopCapture();
             }
           });
         },
@@ -239,20 +230,19 @@ $(document).ready(function () {
           this.recorder.exportWAV(this.wavExported);
         },
         wavExported: function (blob) {
-          var form = new FormData();
+          const form = new FormData();
           form.append('file', blob);
 
           if(this.recordedVoice) URL.revokeObjectURL(this.recordedVoice);
           this.recordedVoice = URL.createObjectURL(blob);
 
-          var self = this;
-          recognizeSkill(blob).then(function(charmData) {
-            self.candidateCharm = new Charm(charmData);
+          recognizeSkill(blob).then((charmData) => {
+            if(charmData) this.candidateCharm = new Charm(charmData);
           });
         }
       }
     });
-  }, function (e) {
+  }, (e) => {
     alert("Mic access error!" + e);
     console.error(e);
   });
