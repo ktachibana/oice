@@ -2,46 +2,7 @@ import $ from 'jquery';
 import Vue from 'vue';
 import Recorder from 'recorderjs';
 import recognizeSkill from './recognizeSkill';
-
-window.URL = window.URL || window.webkitURL;
-navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
-  navigator.mozGetUserMedia || navigator.msGetUserMedia;
-window.AudioContext = window.AudioContext || window.webkitAudioContext;
-
-const now = window.performance && (
-    performance.now || performance.mozNow || performance.msNow ||
-    performance.oNow || performance.webkitNow
-  );
-window.getTime = function () {
-  return (now && now.call(performance)) ||
-    (new Date().getTime());
-};
-
-window.requestAnimationFrame = (function () {
-  return window.requestAnimationFrame ||
-    window.webkitRequestAnimationFrame ||
-    window.mozRequestAnimationFrame ||
-    window.msRequestAnimationFrame ||
-    window.oRequestAnimationFrame ||
-    function (f) {
-      return window.setTimeout(f, 1000 / 60);
-    };
-}());
-window.cancelAnimationFrame = (function () {
-  return window.cancelAnimationFrame ||
-    window.cancelRequestAnimationFrame ||
-    window.webkitCancelAnimationFrame ||
-    window.webkitCancelRequestAnimationFrame ||
-    window.mozCancelAnimationFrame ||
-    window.mozCancelRequestAnimationFrame ||
-    window.msCancelAnimationFrame ||
-    window.msCancelRequestAnimationFrame ||
-    window.oCancelAnimationFrame ||
-    window.oCancelRequestAnimationFrame ||
-    function (id) {
-      window.clearTimeout(id);
-    };
-}());
+import './vendors';
 
 var startMicLevelDetection = function(source, callback) {
   const analyser = source.context.createAnalyser();
@@ -68,7 +29,7 @@ var startLimitTimer = function(limitTimeInMSec, options) {
 
   let timer = null;
   let timeFromStart = 0;
-  let timeAtPrevFrame = getTime();
+  let timeAtPrevFrame = window.performance.now();
 
   const stop = () => {
     if (timer) {
@@ -78,7 +39,7 @@ var startLimitTimer = function(limitTimeInMSec, options) {
   };
 
   const updateFrame = () => {
-    const now = getTime();
+    const now = window.performance.now();
     timeFromStart += (now - timeAtPrevFrame);
     timeAtPrevFrame = now;
 
