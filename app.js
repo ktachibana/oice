@@ -60,6 +60,26 @@ var startLimitTimer = function(limitTimeInMSec, options) {
   return stop;
 };
 
+const openMic = function() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.getUserMedia) {
+      reject(new Error("WebRTC(getUserMedia) is not supported."));
+      return;
+    }
+
+    navigator.getUserMedia({
+      video: false,
+      audio: true
+    }, (stream) => {
+      const audioContext = new AudioContext();
+      const input = audioContext.createMediaStreamSource(stream);
+      resolve(input);
+    }, (e) => {
+      reject(e);
+    });
+  });
+};
+
 class Skill {
   constructor(attrs) {
     attrs = attrs || {};
@@ -83,128 +103,116 @@ class Charm {
   }
 }
 
-$(document).ready(() => {
-  if (!navigator.getUserMedia) {
-    alert("WebRTC(getUserMedia) is not supported.");
-    return;
+Vue.config.debug = true;
+
+Vue.component('skill', {
+  template: '#skill-template',
+  props: ['skill']
+});
+
+Vue.component('charm', {
+  template: '#charm-template',
+  props: ['charm', 'onDelete'],
+  computed: {
+    isDeletable: function() {
+      return !!this.onDelete;
+    }
   }
+});
 
-  navigator.getUserMedia({
-    video: false,
-    audio: true
-  }, (stream) => {
-    const audioContext = new AudioContext();
-    const input = audioContext.createMediaStreamSource(stream);
-
-    Vue.config.debug = true;
-
-    Vue.component('skill', {
-      template: '#skill-template',
-      props: ['skill']
+const vue = new Vue({
+  data: {
+    micInput: null,
+    recorder: null,
+    recordedVoice: null,
+    candidateCharm: null,
+    charms: [],
+    micLevel: 0,
+    timerStopper: null,
+    timerProgress: 0
+  },
+  attached: function () {
+    startMicLevelDetection(this.micInput, (micLevel) => {
+      this.micLevel = micLevel;
     });
-
-    Vue.component('charm', {
-      template: '#charm-template',
-      props: ['charm', 'onDelete'],
-      computed: {
-        isDeletable: function() {
-          return !!this.onDelete;
+    this.$els.keyboard.focus();
+  },
+  computed: {
+    micLevelIcon: function() {
+      const c = 256 - this.micLevel;
+      return {
+        glyphicon: this.micLevel == 0 ? 'volume-off' : 'volume-up',
+        style: {
+          backgroundColor: 'rgb(' + c + ', ' + c + ', ' + c + ')'
         }
+      };
+    },
+    csv: function() {
+      return this.charms.map(charm => charm.cols.join(',')).join("\r\n");
+    }
+  },
+  methods: {
+    selectAllCsv: function() {
+      this.$els.csvTextArea.select();
+    },
+    addCharm: function(data) {
+      this.charms.unshift(new Charm(data));
+    },
+    decideCharm: function() {
+      if(this.candidateCharm) {
+        this.addCharm(this.candidateCharm);
+        this.candidateCharm = null;
+        this.recordedVoice = null;
       }
-    });
+    },
+    deleteCharm: function(index) {
+      return () => { this.charms.splice(index, 1); };
+    },
+    getFocus: function() {
+      this.$els.keyboard.focus();
+    },
+    startCapture: function() {
+      if(this.timerStopper) return;
 
-    new Vue({
-      el: '#vue-app',
-      data: {
-        recorder: null,
-        recordedVoice: null,
-        candidateCharm: null,
-        charms: [],
-        micLevel: 0,
-        timerStopper: null,
-        timerProgress: 0
-      },
-      created: function() {
-        startMicLevelDetection(input, (micLevel) => {
-          this.micLevel = micLevel;
-        });
-      },
-      attached: function () {
-        this.$els.keyboard.focus();
-      },
-      computed: {
-        micLevelIcon: function() {
-          const c = 256 - this.micLevel;
-          return {
-            glyphicon: this.micLevel == 0 ? 'volume-off' : 'volume-up',
-            style: {
-              backgroundColor: 'rgb(' + c + ', ' + c + ', ' + c + ')'
-            }
-          };
+      this.recorder = new Recorder(this.micInput);
+      this.recorder.record();
+
+      this.timerStopper = startLimitTimer(5000, {
+        progress: (percent) => {
+          this.timerProgress = percent;
         },
-        csv: function() {
-          return this.charms.map(charm => charm.cols.join(',')).join("\r\n");
+        limit: () => {
+          this.stopCapture();
         }
-      },
-      methods: {
-        selectAllCsv: function() {
-          this.$els.csvTextArea.select();
-        },
-        addCharm: function(data) {
-          this.charms.unshift(new Charm(data));
-        },
-        decideCharm: function() {
-          if(this.candidateCharm) {
-            this.addCharm(this.candidateCharm);
-            this.candidateCharm = null;
-            this.recordedVoice = null;
-          }
-        },
-        deleteCharm: function(index) {
-          return () => { this.charms.splice(index, 1); };
-        },
-        getFocus: function() {
-          this.$els.keyboard.focus();
-        },
-        startCapture: function() {
-          if(this.timerStopper) return;
+      });
+    },
+    stopCapture: function() {
+      if(!this.timerStopper) return;
 
-          this.recorder = new Recorder(input);
-          this.recorder.record();
+      this.timerStopper();
+      this.timerStopper = null;
+      this.timerProgress = 0;
+      this.recorder.stop();
+      this.recorder.exportWAV(this.wavExported);
+    },
+    wavExported: function (blob) {
+      const form = new FormData();
+      form.append('file', blob);
 
-          this.timerStopper = startLimitTimer(5000, {
-            progress: (percent) => {
-              this.timerProgress = percent;
-            },
-            limit: () => {
-              this.stopCapture();
-            }
-          });
-        },
-        stopCapture: function() {
-          if(!this.timerStopper) return;
+      if(this.recordedVoice) URL.revokeObjectURL(this.recordedVoice);
+      this.recordedVoice = URL.createObjectURL(blob);
 
-          this.timerStopper();
-          this.timerStopper = null;
-          this.timerProgress = 0;
-          this.recorder.stop();
-          this.recorder.exportWAV(this.wavExported);
-        },
-        wavExported: function (blob) {
-          const form = new FormData();
-          form.append('file', blob);
+      recognizeSkill(blob).then((charmData) => {
+        if(charmData) this.candidateCharm = new Charm(charmData);
+      });
+    }
+  }
+});
 
-          if(this.recordedVoice) URL.revokeObjectURL(this.recordedVoice);
-          this.recordedVoice = URL.createObjectURL(blob);
-
-          recognizeSkill(blob).then((charmData) => {
-            if(charmData) this.candidateCharm = new Charm(charmData);
-          });
-        }
-      }
-    });
-  }, (e) => {
-    alert("Mic access error!" + e);
-    console.error(e);
-  });
+openMic().then((input) => {
+  vue.micInput = input;
+  vue.$mount('#vue-app');
+}).catch((e) => {
+  alert("Mic access error!" + e);
+  console.error(e);
 });
