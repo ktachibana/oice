@@ -1,65 +1,22 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>MHX 護石音声入力</title>
-	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
-	<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MHX 護石音声入力</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div class="wrap">
-	<div class="container">
-		<div class="header">
-			<h1>
-				MHX 護石音声入力
-			</h1>
-		</div>
-
-		<template id="charm-template">
-			<tr>
-				<td is="skill" :skill="charm.skills[0]"></td>
-				<td is="skill" :skill="charm.skills[1]"></td>
-				<td>{{charm.slotMarks}}</td>
-				<td v-if="isDeletable"><a @click="onDelete"><span class="glyphicon glyphicon-remove"></span></a></td>
-			</tr>
-		</template>
-
-		<template id="skill-template">
-			<td>{{skill.route}}</td>
-			<td>{{skill.point}}</td>
-		</template>
-
-		<div id="vue-app" v-cloak>
-			<span class="mic-level glyphicon glyphicon-{{micLevelIcon.glyphicon}}" :style="micLevelIcon.style"></span>
-			<span class="clearfix"></span>
-
-			<div class="timer">
-				<div class="capture-timer" :style="{ width: timerProgress + '%' }"></div>
-			</div>
-
-			<button type="button"
-							class="btn btn-default btn-lg"
-							@keydown.16="startCapture"
-							@keyup.16="stopCapture"
-							@keypress.enter="decideCharm"
-							@click="getFocus"
-							v-el:keyboard>shift</button>
-
-			<div>
-				<table class="table table-bordered" v-if="candidateCharm">
-					<tr is="charm" :charm="candidateCharm"></tr>
-				</table>
-				<audio v-if="recordedVoice" :src="recordedVoice" controls></audio>
-			</div>
-
-			<table class="table table-striped table-hover table-condensed">
-				<tr is="charm" :charm="charm" v-for="charm in charms" :on-delete="deleteCharm($index)"></tr>
-			</table>
-
-			<textarea cols="30" rows="10" @focus="selectAllCsv" readonly v-el:csv-text-area>{{csv}}</textarea>
-		</div>
-	</div>
+  <div class="container">
+    <div class="header">
+      <h1>
+        MHX 護石音声入力
+      </h1>
+    </div>
+    <div id="app"></div>
+  </div>
 </div>
 
 <script src="dist/bundle.js"></script>
