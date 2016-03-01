@@ -25,11 +25,11 @@ function createMainWindow() {
 		height: 400,
     webPreferences: {
       nodeIntegration: false,
-      preload: __dirname + '/../preload.js'
+      preload: __dirname + '/preload.js'
     }
 	});
 
-	win.loadURL(`file://${__dirname}/../index.html`);
+	win.loadURL(`file://${__dirname}/../ui/index.html`);
 	win.on('closed', onClosed);
 
 	return win;
