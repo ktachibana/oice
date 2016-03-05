@@ -20,8 +20,8 @@ class Charm extends React.Component {
         {this.renderSkill(this.props.charm.skills[0])}
         {this.renderSkill(this.props.charm.skills[1])}
         <td>{"◯".repeat(this.props.charm.slot)}</td>
-        {this.props.charm.onDelete ?
-          <td><a onClick={this.props.charm.onDelete.bind(this)}><span className="glyphicon glyphicon-remove"/></a></td> :
+        {this.props.onDelete ?
+          <td><a onClick={this.props.onDelete.bind(this)}><span className="glyphicon glyphicon-remove"/></a></td> :
           null}
       </tr>
     );
@@ -114,7 +114,7 @@ class App extends React.Component {
 
   deleteCharm(delIndex) {
     this.setState({
-      charms: this.state.charms.filter(_, index => index != delIndex)
+      charms: this.state.charms.filter((_, index) => index != delIndex)
     });
   }
 

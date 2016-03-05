@@ -14,10 +14,11 @@ RUN gem install --no-rdoc --no-ri bundler
 
 WORKDIR /app
 
-COPY . ./
+COPY Gemfile Gemfile.lock ./
 RUN bundle install
-
 RUN apk del build
+
+COPY . ./
 
 EXPOSE 443
 CMD ["bundle", "exec", "thin", "--ssl", "--port", "443", "start"]
