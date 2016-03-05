@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 function blobToBuffer(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -16,11 +18,23 @@ function blobToBuffer(blob) {
   });
 }
 
-module.exports = function(blob) {
+module.exports = function (blob) {
   return new Promise((resolve, reject) => {
     blobToBuffer(blob).then(buffer => {
-      const charmData = ipc.sendSync('recognize', buffer);
-      resolve(charmData);
+      const form = new FormData();
+      form.append('file', blob);
+      $.ajax({
+          url: '/',
+          type: 'POST',
+          data: form,
+          dataType: 'json',
+          processData: false,
+          contentType: false
+        }
+      ).then(function (charmData, _, xhr) {
+        if (xhr.status == 204) resolve(null);
+        resolve(charmData);
+      });
     });
   });
 };
