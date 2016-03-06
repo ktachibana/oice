@@ -1,10 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import classNames from 'classnames';
-import Recorder from 'recorderjs';
-import { startMicLevelDetection, startLimitTimer } from './functions';
-import recognizeSkill from './recognizeSkill';
-import model from './models';
+import { startMicLevelDetection } from './functions';
+import Application from './application'
 
 class Charm extends React.Component {
   renderSkill(skill) {
@@ -28,27 +26,65 @@ class Charm extends React.Component {
   }
 }
 
-class App extends React.Component {
+class MicDetection extends React.Component {
   constructor(props) {
     super(props);
-    this.recorder = null;
-    this.timerStopper = null;
-
-    this.state = {
-      recordedVoice: null,
-      candidateCharm: null,
-      charms: [],
-      micLevel: 0,
-      timerProgress: 0
-    };
+    this.state = { micLevel: 0 };
   }
 
   componentDidMount() {
     startMicLevelDetection(this.props.micInput, (micLevel) => {
       this.setState({ micLevel: micLevel });
     });
+  }
+
+  get micLevelIcon() {
+    const c = 256 - this.state.micLevel;
+    return {
+      glyphicon: this.state.micLevel == 0 ? 'volume-off' : 'volume-up',
+      style: {
+        backgroundColor: 'rgb(' + c + ', ' + c + ', ' + c + ')'
+      }
+    };
+  }
+
+  render() {
+    const icon = this.micLevelIcon;
+    return (
+      <span className={classNames('mic-level', 'glyphicon', `glyphicon-${icon.glyphicon}`)} style={icon.style} />
+    );
+  }
+}
+
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.app = props.app;
+    this.state = this.toState();
+    this.state.micLevel = 0;
+  }
+
+  toState() {
+    return {
+      recordedVoice: this.app.recordedVoice,
+      candidateCharm: this.app.candidateCharm,
+      charms: this.app.charms,
+      timerProgress: this.app.timerProgress
+    };
+  }
+
+  appChanged() {
+    this.setState(this.toState());
+  }
+
+  componentDidMount() {
+    this.app.on('changed', this.appChanged.bind(this));
 
     this.focusKeyboard();
+  }
+
+  componentWillUnmount() {
+    this.app.removeListener('changed', this.appChanged.bind(this));
   }
 
   focusKeyboard() {
@@ -65,79 +101,30 @@ class App extends React.Component {
     };
   }
 
-  startCapture() {
-    if(this.timerStopper) return;
-
-    this.recorder = new Recorder(this.props.micInput);
-    this.recorder.record();
-
-    this.timerStopper = startLimitTimer(5000, {
-      progress: (percent) => {
-        this.setState({ timerProgress: percent });
-      },
-      limit: () => {
-        this.stopCapture();
-      }
-    });
-  }
-
-  stopCapture() {
-    if(!this.timerStopper) return;
-
-    this.timerStopper();
-    this.timerStopper = null;
-    this.setState({ timerProgress: 0 });
-
-    this.recorder.stop();
-    this.recorder.exportWAV(blob => {
-      const form = new FormData();
-      form.append('file', blob);
-
-      if(this.state.recordedVoice) URL.revokeObjectURL(this.state.recordedVoice);
-      this.setState({ recordedVoice: URL.createObjectURL(blob) });
-
-      recognizeSkill(blob).then(charmData => {
-        if(charmData) this.setState({ candidateCharm: new model.Charm(charmData) });
-      });
-    });
-  }
-
-  decideCharm() {
-    if(this.state.candidateCharm) {
-      this.setState({
-        charms: [this.state.candidateCharm, ...this.state.charms],
-        candidateCharm: null,
-        recordedVoice: null
-      });
-    }
-  }
-
-  deleteCharm(delIndex) {
-    this.setState({
-      charms: this.state.charms.filter((_, index) => index != delIndex)
-    });
-  }
-
   onKeyDown(e) {
     if(e.key === 'Shift') {
-      this.startCapture();
+      this.app.startCapture();
     }
   }
 
   onKeyUp(e) {
     if(e.key === 'Shift') {
-      this.stopCapture();
+      this.app.stopCapture();
     }
   }
 
   onKeyPress(e) {
     if(e.key == 'Enter') {
-      this.decideCharm();
+      this.app.decideCharm();
     }
   }
 
   onClickKeyboard(e) {
     this.focusKeyboard();
+  }
+
+  onDeleteCharm(delIndex) {
+    this.app.deleteCharm(delIndex);
   }
 
   renderCandidateCharmIfEnable() {
@@ -155,42 +142,44 @@ class App extends React.Component {
   }
 
   get csv() {
-    return this.state.charms.map(charm => charm.cols.join(',')).join("\r\n");
+    return this.app.csv;
   }
 
   render() {
     return (
       <div>
-        <span className={classNames('mic-level', 'glyphicon', `glyphicon-${this.micLevelIcon.glyphicon}`)} style={this.micLevelIcon.style} />
-        <span className="clearfix" />
-
-        <div className="timer">
-          <div className="capture-timer" style={ { width: this.state.timerProgress + '%' } }></div>
-        </div>
-
-        <button type="button"
-                ref="keyboard"
-                className="btn btn-default btn-lg"
-                onKeyDown={this.onKeyDown.bind(this)}
-                onKeyUp={this.onKeyUp.bind(this)}
-                onKeyPress={this.onKeyPress.bind(this)}
-                onClick={this.onClickKeyboard.bind(this)}>Focus & Speak</button>
-
         <div>
-          {this.state.candidateCharm ?
-            <table className="table table-bordered">
-              <tbody>
+          <MicDetection micInput={this.app.micInput} />
+          <span className="clearfix" />
+
+          <div className="timer">
+            <div className="capture-timer" style={ { width: this.state.timerProgress + '%' } }></div>
+          </div>
+
+          <button type="button"
+                  ref="keyboard"
+                  className="btn btn-default btn-lg"
+                  onKeyDown={this.onKeyDown.bind(this)}
+                  onKeyUp={this.onKeyUp.bind(this)}
+                  onKeyPress={this.onKeyPress.bind(this)}
+                  onClick={this.onClickKeyboard.bind(this)}>Focus & Speak</button>
+
+          <div>
+            {this.state.recordedVoice ?
+              <audio src={this.state.recordedVoice} controls /> : null}
+            {this.state.candidateCharm ?
+              <table className="table table-bordered">
+                <tbody>
                 <Charm charm={this.state.candidateCharm}/>
-              </tbody>
-            </table> : null}
-          {this.state.recordedVoice ?
-            <audio src={this.state.recordedVoice} controls /> : null}
+                </tbody>
+              </table> : null}
+          </div>
         </div>
 
         <table className="table table-striped table-hover table-condensed">
           <tbody>
             {this.state.charms.map((charm, index) =>
-              <Charm charm={charm} key={index} onDelete={() => { this.deleteCharm(index) }} />
+              <Charm charm={charm} key={index} onDelete={() => { this.onDeleteCharm(index) }} />
             )}
           </tbody>
         </table>
@@ -201,6 +190,6 @@ class App extends React.Component {
   }
 }
 
-module.exports = function(micInput, nodeId) {
-  ReactDOM.render(<App micInput={micInput}/>, document.getElementById(nodeId));
+module.exports = function(app, nodeId) {
+  ReactDOM.render(<App app={app} />, document.getElementById(nodeId));
 };
