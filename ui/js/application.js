@@ -97,16 +97,13 @@ export default class Application extends EventEmitter {
     return this.charms.map(charm => charm.serializable);
   }
 
-  downloadBackup() {
-    const json = JSON.stringify(this.serializable);
-    const url = URL.createObjectURL(new Blob([json], { type: 'application/octet-stream; charset=UTF-8' }));
-    // revokeObjectURLすべきだがそのタイミングがない
+  exportBackup() {
+    return JSON.stringify(this.serializable);
+  }
 
-    const a = document.createElement('a');
-    a.style = 'display: none';
-    a.download = `oice-backup-${new Date().getTime()}.json`;
-    a.href = url;
-    document.body.appendChild(a);
-    a.click();
+  importBackup(json) {
+    this.charms = JSON.parse(json).map(charmAttrs => new model.Charm(charmAttrs));
+    this.save();
+    this.emitChanged();
   }
 }

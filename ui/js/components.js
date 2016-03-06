@@ -172,8 +172,30 @@ class App extends React.Component {
     }
   }
 
-  downloadBackup() {
-    this.app.downloadBackup();
+  exportBackup() {
+    if(this.backupURL) URL.revokeObjectURL(this.backupURL);
+    const json = this.app.exportBackup();
+    this.backupURL = URL.createObjectURL(new Blob([json], { type: 'application/octet-stream; charset=UTF-8' }));
+
+    const a = document.createElement('a');
+    a.style = 'display: none';
+    a.download = `oice-backup-${new Date().getTime()}.json`;
+    a.href = this.backupURL;
+    document.body.appendChild(a);
+    a.click();
+  }
+
+  importBackup(_e) {
+    const backupFile = this.refs.backupFileInput.files[0];
+    if(!backupFile) return;
+
+    const reader = new FileReader();
+    reader.readAsText(backupFile, 'UTF-8');
+    reader.addEventListener('load', (e) => {
+      const json = e.target.result;
+      this.app.importBackup(json);
+      this.refs.backupFileInput.value = null;
+    });
   }
 
   render() {
@@ -214,7 +236,7 @@ class App extends React.Component {
             {this.state.candidateCharm ?
               <table className="table table-bordered charm">
                 <tbody>
-                <Charm charm={this.state.candidateCharm}/>
+                <Charm charm={this.state.candidateCharm} />
                 </tbody>
               </table> : '？'}
           </div>
@@ -232,7 +254,7 @@ class App extends React.Component {
               <table className="table table-bordered table-hover charm">
                 <tbody>
                 {this.state.charms.map((charm, index) =>
-                  <Charm charm={charm} key={index} onDelete={(e) => { this.onDeleteCharm(index); e.preventDefault(); }} />
+                  <Charm charm={charm} onDelete={(e) => { this.onDeleteCharm(index); e.preventDefault(); }} />
                 )}
                 </tbody>
               </table> :
@@ -248,8 +270,17 @@ class App extends React.Component {
               <textarea cols="30" rows="5" value={this.csv} onFocus={this.selectAllCsv.bind(this)} ref="csvTextArea" readOnly />
             </div>
 
+            <hr/>
+
             <div className="backup">
-              <button onClick={this.downloadBackup.bind(this)}>バックアップ</button>
+              <p>護石データをOice固有のファイル形式でバックアップできます。</p>
+              <div className="export">
+                <button onClick={this.exportBackup.bind(this)}>保存</button>
+              </div>
+              <div className="import">
+                <input type="file" className="backupFile" ref="backupFileInput" />
+                <button onClick={this.importBackup.bind(this)}>復元</button>
+              </div>
             </div>
          </div>
         </div>

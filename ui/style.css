@@ -100,3 +100,11 @@ h1 {
     color: silver;
     font-style: italic;
 }
+
+.backup {
+    text-align: left;
+}
+
+input[type="file"].backupFile {
+    display: inline-block;
+}
