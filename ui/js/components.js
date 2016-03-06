@@ -172,6 +172,10 @@ class App extends React.Component {
     }
   }
 
+  downloadBackup() {
+    this.app.downloadBackup();
+  }
+
   render() {
     return (
       <div>
@@ -243,7 +247,11 @@ class App extends React.Component {
               <p>CHARM.csv</p>
               <textarea cols="30" rows="5" value={this.csv} onFocus={this.selectAllCsv.bind(this)} ref="csvTextArea" readOnly />
             </div>
-          </div>
+
+            <div className="backup">
+              <button onClick={this.downloadBackup.bind(this)}>バックアップ</button>
+            </div>
+         </div>
         </div>
 
         <div className="doc well">

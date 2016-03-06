@@ -14,7 +14,7 @@ export default class Application extends EventEmitter {
 
     this.recordedVoice = null;
     this.candidateCharm = null;
-    this.charms = store.get('charms') || [];
+    this.charms = this.load() || [];
     this.timerProgress = 0;
   }
 
@@ -80,10 +80,33 @@ export default class Application extends EventEmitter {
   }
 
   save() {
-    store.set('charms', this.charms);
+    store.set('charms', this.serializable);
+  }
+
+  load() {
+    const charms = store.get('charms');
+    if(!charms) return;
+    return charms.map(charm => new model.Charm(charm));
   }
 
   get csv() {
     return this.charms.map(charm => charm.cols.join(',')).join("\r\n");
+  }
+
+  get serializable() {
+    return this.charms.map(charm => charm.serializable);
+  }
+
+  downloadBackup() {
+    const json = JSON.stringify(this.serializable);
+    const url = URL.createObjectURL(new Blob([json], { type: 'application/octet-stream; charset=UTF-8' }));
+    // revokeObjectURLすべきだがそのタイミングがない
+
+    const a = document.createElement('a');
+    a.style = 'display: none';
+    a.download = `oice-backup-${new Date().getTime()}.json`;
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
   }
 }
