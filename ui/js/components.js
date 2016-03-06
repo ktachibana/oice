@@ -228,7 +228,7 @@ class App extends React.Component {
               <table className="table table-bordered table-hover charm">
                 <tbody>
                 {this.state.charms.map((charm, index) =>
-                  <Charm charm={charm} key={index} onDelete={() => { this.onDeleteCharm(index) }} />
+                  <Charm charm={charm} key={index} onDelete={(e) => { this.onDeleteCharm(index); e.preventDefault(); }} />
                 )}
                 </tbody>
               </table> :
@@ -255,12 +255,13 @@ class App extends React.Component {
               <li>
                 認識結果が表示される。
                 <ul>
-                  <li>正しく表示されたらEnterを押る。一覧に追加される。</li>
+                  <li>正しく表示されたらEnterを押すと一覧に追加される。</li>
                   <li>間違って表示されたらもう一度上記をやり直す。</li>
                 </ul>
               </li>
               <li>入力し終わったらテキストエリアからコピーして、別のツールに貼り付ける。</li>
             </ul>
+            ブラウザのローカル領域に保存するので閉じたりリロードしても大丈夫です。
           </div>
           <h3>発音</h3>
           <pre>{yomi}</pre>

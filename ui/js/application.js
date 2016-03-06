@@ -3,6 +3,7 @@ import Recorder from 'recorderjs';
 import { startLimitTimer } from './functions';
 import recognizeSkill from './recognizeSkill';
 import model from './models';
+import store from 'store';
 
 export default class Application extends EventEmitter {
   constructor(micInput) {
@@ -13,7 +14,7 @@ export default class Application extends EventEmitter {
 
     this.recordedVoice = null;
     this.candidateCharm = null;
-    this.charms = [];
+    this.charms = store.get('charms') || [];
     this.timerProgress = 0;
   }
 
@@ -65,6 +66,7 @@ export default class Application extends EventEmitter {
   decideCharm() {
     if(this.candidateCharm) {
       this.charms = [this.candidateCharm, ...this.charms];
+      this.save();
       this.candidateCharm = null;
       this.recordedVoice = null;
       this.emitChanged();
@@ -73,7 +75,12 @@ export default class Application extends EventEmitter {
 
   deleteCharm(delIndex) {
     this.charms = this.charms.filter((_, index) => index != delIndex);
+    this.save();
     this.emitChanged();
+  }
+
+  save() {
+    store.set('charms', this.charms);
   }
 
   get csv() {
