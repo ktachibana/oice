@@ -26,7 +26,6 @@ h1 {
 }
 
 .timer {
-    width: 256px;
     background-color: #000000;
     margin: 0;
 }
@@ -47,14 +46,9 @@ h1 {
 
 .mic-level {
     font-size: 32px;
-    position: absolute;
     top: 0;
     right: 0;
     margin: 8px;
     padding: 8px;
     border-radius: 8px;
-}
-
-[v-cloak] {
-    display: none;
 }
