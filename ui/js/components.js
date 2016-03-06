@@ -8,9 +8,10 @@ const yomi = require('raw!../../grammar/charm.yomi');
 
 class Charm extends React.Component {
   renderSkill(skill) {
+    const pointText = skill.point && ((skill.point > 0 ? '+' : '') + skill.point);
     return [
       <td className="skill-route">{skill.route}</td>,
-      <td className="skill-point">{skill.point}</td>
+      <td className="skill-point">{pointText}</td>
     ];
   }
 
