@@ -17,10 +17,11 @@
   },
   "scripts": {
     "test": "xo",
-    "start": "electron .",
-    "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --all --version=$npm_package_electronVersion",
+    "start": "docker run -ti -p 443:443 oice",
     "build:grammar": "cd grammar; ./build.sh",
-    "build": "npm run build:grammar & webpack",
+    "build:docker": "docker build -t oice .",
+    "build": "npm run build:grammar; webpack; npm run build:docker",
+    "start-dev": "npm run watch & bundle exec thin --ssl -p 4430 start",
     "watch": "npm-watch & webpack -w"
   },
   "main": "main/index.js",
