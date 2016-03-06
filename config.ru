@@ -16,7 +16,7 @@ post '/' do
   str = `#{command}`
   puts str
 
-  sentence = str[PATTERN, 1] || (break 204)
+  sentence = str[PATTERN, 1] || (break 200)
   words = sentence.split(/\s+/)
 
   skills = []

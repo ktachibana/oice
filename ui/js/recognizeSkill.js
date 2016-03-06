@@ -1,4 +1,4 @@
-import $ from 'jquery';
+import request from 'superagent';
 
 function blobToBuffer(blob) {
   return new Promise((resolve, reject) => {
@@ -23,17 +23,9 @@ module.exports = function (blob) {
     blobToBuffer(blob).then(buffer => {
       const form = new FormData();
       form.append('file', blob);
-      $.ajax({
-          url: '/',
-          type: 'POST',
-          data: form,
-          dataType: 'json',
-          processData: false,
-          contentType: false
-        }
-      ).then(function (charmData, _, xhr) {
-        if (xhr.status == 204) resolve(null);
-        resolve(charmData);
+      request.post('/').send(form).end(function (err, charmData) {
+        if (err) reject(err);
+        resolve(charmData.body);
       });
     });
   });
