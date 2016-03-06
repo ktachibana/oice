@@ -9,9 +9,14 @@ const yomi = require('raw!../../grammar/charm.yomi');
 class Charm extends React.Component {
   renderSkill(skill) {
     return [
-      <td>{skill.route}</td>,
-      <td>{skill.point}</td>
+      <td className="skill-route">{skill.route}</td>,
+      <td className="skill-point">{skill.point}</td>
     ];
+  }
+
+  get slotText() {
+    var slotNum = this.props.charm.slot;
+    return '◯'.repeat(slotNum) + '―'.repeat(3 - slotNum);
   }
 
   render() {
@@ -19,9 +24,9 @@ class Charm extends React.Component {
       <tr>
         {this.renderSkill(this.props.charm.skills[0])}
         {this.renderSkill(this.props.charm.skills[1])}
-        <td>{"◯".repeat(this.props.charm.slot)}</td>
+        <td className="slot">{this.slotText}</td>
         {this.props.onDelete ?
-          <td><a href="#" onClick={this.props.onDelete.bind(this)}><span className="glyphicon glyphicon-remove"/></a></td> :
+          <td className="remove-button"><a href="#" onClick={this.props.onDelete.bind(this)}><span className="glyphicon glyphicon-remove"/></a></td> :
           null}
       </tr>
     );
@@ -53,7 +58,7 @@ class MicDetection extends React.Component {
   render() {
     const icon = this.micLevelIcon;
     return (
-      <span className={classNames('mic-level', 'float-right', 'glyphicon', `glyphicon-${icon.glyphicon}`)} style={icon.style} />
+      <span className={classNames('mic-level', 'glyphicon', `glyphicon-${icon.glyphicon}`)} style={icon.style} />
     );
   }
 }
@@ -157,69 +162,87 @@ class App extends React.Component {
   }
 
   get buttonText() {
-    if(this.state.isFocusing) {
-      return 'Shiftキーを押しながらマイクに喋る'
-    } else {
+    if(!this.state.isFocusing) {
       return 'ここをクリック'
+    } else if(this.state.candidateCharm) {
+      return <span className="guide-message">正しくなければもう一度</span>;
+    } else {
+      return 'Shiftキーを押しながらマイクに喋る'
     }
   }
 
   render() {
     return (
       <div>
-        <div>
-          <div className="recording panel panel-default">
-            <div className="panel-body">
-              <div className="recoding-button-panel">
-                <button type="button"
-                        ref="keyboard"
-                        className="btn btn-default btn-lg"
-                        onKeyDown={this.onKeyDown.bind(this)}
-                        onKeyUp={this.onKeyUp.bind(this)}
-                        onKeyPress={this.onKeyPress.bind(this)}
-                        onClick={this.onClickKeyboard.bind(this)}
-                        onFocus={this.onFocusKeyboard.bind(this)}
-                        onBlur={this.onFocusoutKeyboard.bind(this)}>
-                  {this.buttonText}
-                </button>
-              </div>
-
+        <div className="ui">
+          <div>
+            <button type="button"
+                    ref="keyboard"
+                    className="recording-button btn btn-default btn-lg"
+                    onKeyDown={this.onKeyDown.bind(this)}
+                    onKeyUp={this.onKeyUp.bind(this)}
+                    onKeyPress={this.onKeyPress.bind(this)}
+                    onClick={this.onClickKeyboard.bind(this)}
+                    onFocus={this.onFocusKeyboard.bind(this)}
+                    onBlur={this.onFocusoutKeyboard.bind(this)}>
               <MicDetection micInput={this.app.micInput} />
-
+              {this.buttonText}
               <div className="timer">
                 <div className="capture-timer" style={ { width: (100 - this.state.timerProgress) + '%' } }></div>
               </div>
-              <span className="clearfix" />
-            </div>
+            </button>
           </div>
 
-          <div>
+          <div className="recorded-voice">
             {this.state.recordedVoice ?
               [
                 <audio src={this.state.recordedVoice} controls />,
                 <a href={this.state.recordedVoice}>Save</a>
               ] : null}
+          </div>
 
+          <div className="procedure-allow">
+            <span className="glyphicon glyphicon-arrow-down" />
+          </div>
+
+          <div className={classNames('candidate', { 'candidate-empty': !this.state.candidateCharm })}>
             {this.state.candidateCharm ?
-              <table className="table table-bordered">
+              <table className="table table-bordered charm">
                 <tbody>
                 <Charm charm={this.state.candidateCharm}/>
                 </tbody>
-              </table> : null}
+              </table> : '？'}
           </div>
-        </div>
 
-        <table className="table table-striped table-hover table-condensed">
-          <tbody>
-            {this.state.charms.map((charm, index) =>
-              <Charm charm={charm} key={index} onDelete={() => { this.onDeleteCharm(index) }} />
-            )}
-          </tbody>
-        </table>
+          <div className="procedure-allow">
+            {this.state.candidateCharm ?
+              <div className="guide-message">正しければEnterキー</div> :
+              null
+            }
+            <span className="glyphicon glyphicon-arrow-down" />
+          </div>
 
-        <div className="csv">
-          <p>CHARM.csv</p>
-          <textarea cols="30" rows="5" value={this.csv} onFocus={this.selectAllCsv.bind(this)} ref="csvTextArea" readOnly />
+          <div className="results">
+            {this.state.charms.length ?
+              <table className="table table-bordered table-hover charm">
+                <tbody>
+                {this.state.charms.map((charm, index) =>
+                  <Charm charm={charm} key={index} onDelete={() => { this.onDeleteCharm(index) }} />
+                )}
+                </tbody>
+              </table> :
+              <div className="empty">
+                ここに確定した結果が追加されます。
+              </div>
+            }
+
+            <hr/>
+
+            <div className="csv">
+              <p>CHARM.csv</p>
+              <textarea cols="30" rows="5" value={this.csv} onFocus={this.selectAllCsv.bind(this)} ref="csvTextArea" readOnly />
+            </div>
+          </div>
         </div>
 
         <div className="doc well">

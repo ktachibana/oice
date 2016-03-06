@@ -25,6 +25,10 @@ h1 {
     margin: 10px 0 5px 0;
 }
 
+.ui {
+    text-align: center;
+}
+
 .timer {
     background-color: #000000;
     margin: 0;
@@ -32,23 +36,67 @@ h1 {
 
 .capture-timer {
     width: 0;
-    height: 20px;
+    height: 4px;
     background-color: silver;
 }
 
-.capture-button {
-    color: #000000;
-}
-
-.capture-button.on {
-    color: #ff0000;
+.recording-button {
+    width: 100%;
+    white-space: normal;
 }
 
 .mic-level {
-    font-size: 32px;
     top: 0;
     right: 0;
-    margin: 8px;
-    padding: 8px;
-    border-radius: 8px;
+    margin: 4px;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.procedure-allow {
+    margin: 16px;
+}
+
+.guide-message {
+    font-weight: bold;
+}
+
+.charm {
+    width: auto;
+    margin: 0 auto;
+}
+.charm .skill-route {
+    width: 12em;
+    text-align: left;
+}
+
+.charm .skill-point {
+    width: 4em;
+    text-align: right;
+}
+
+.charm .slot {
+    width: 8em;
+    text-align: left;
+}
+
+.candidate {
+    margin: 16px 0;
+    border: 1px solid silver;
+    padding: 16px;
+}
+
+.candidate-empty {
+    border: 1px dashed silver;
+}
+
+.results {
+    border: 1px solid silver;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.results .empty {
+    color: silver;
+    font-style: italic;
 }
