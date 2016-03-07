@@ -2,8 +2,3 @@ node_modules
 dist
 assets
 envtools
-
-grammar/charm.dfa
-grammar/charm.dict
-grammar/charm.term
-grammar/charm.voca
