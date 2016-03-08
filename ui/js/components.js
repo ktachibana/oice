@@ -4,7 +4,7 @@ import classNames from 'classnames';
 import { startMicLevelDetection } from './functions';
 import Application from './application'
 
-const yomi = require('raw!../../skillRecognizer/grammar/charm.yomi');
+const yomi = require('raw!../../julius/grammar/charm.yomi');
 
 class Charm extends React.Component {
   renderSkill(skill) {

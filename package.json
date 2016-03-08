@@ -11,16 +11,16 @@
   "electronVersion": "0.36.0",
   "watch": {
     "build:grammar": {
-      "patterns": "skillRecognizer/grammar/charm.{yomi,grammar}",
+      "patterns": "julius/grammar/charm.{yomi,grammar}",
       "extensions": "yomi,grammar"
     }
   },
   "scripts": {
     "test": "xo",
     "start": "docker run -ti -p 443:443 oice",
-    "build:grammar": "cd skillRecognizer/grammar; ./build.sh",
+    "build:grammar": "cd julius/grammar; ./build.sh",
     "build:docker": "docker build -t oice .",
-    "build": "npm run build:grammar; webpack; npm run build:docker",
+    "build": "npm run build:grammar; webpack",
     "start-dev": "npm run watch & bundle exec thin --ssl -p 4430 start",
     "watch": "npm-watch & webpack -w"
   },
