@@ -8,12 +8,12 @@ module.exports = function(audioFilePath) {
   const tmpFile = tmp.fileSync({ prefix: 'charm-', postfix: '.wav' });
 
   child.spawnSync(
-    path.resolve(__dirname, 'sox-14.4.2/sox.exe'),
+    path.resolve(__dirname, './external/sox-14.4.2/sox.exe'),
     [audioFilePath, '-t', '.wav', '-r', '16k', '-b', '16', '-c', '1', tmpFile.name]
   );
 
   const juliusResult = child.spawnSync(
-    path.resolve(__dirname, 'julius-4.3.1-win32bin/bin/julius-4.3.1.exe'),
+    path.resolve(__dirname, './external/julius-4.3.1-win32bin/bin/julius-4.3.1.exe'),
     ['-C', path.resolve(__dirname, '../../charm.jconf'), '-input', 'file'],
     { input: tmpFile.name }
   );

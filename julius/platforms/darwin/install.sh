@@ -1,5 +1,8 @@
 brew install coreutils
 
+mkdir external
+cd external
+
 git clone https://github.com/julius-speech/julius.git --depth 1
 pushd julius
 ./configure --enable-words-int --prefix=`realpath ../julius-bin` && make && make install

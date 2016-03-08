@@ -1,3 +1,6 @@
+mkdir external
+cd external
+
 wget https://github.com/julius-speech/julius/releases/download/v4.3.1/julius-4.3.1-win32bin.zip
 unzip julius-4.3.1-win32bin.zip
 
