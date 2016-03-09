@@ -14,35 +14,35 @@ require('electron-debug')();
 let mainWindow;
 
 function onClosed() {
-	// dereference the window
-	// for multiple windows store them in an array
-	mainWindow = null;
+  // dereference the window
+  // for multiple windows store them in an array
+  mainWindow = null;
 }
 
 function createMainWindow() {
   const win = new electron.BrowserWindow({
-		width: 600,
-		height: 400,
+    width: 1024,
+    height: 768,
     webPreferences: {
       nodeIntegration: false,
       preload: __dirname + '/preload.js'
     }
-	});
+  });
 
-	win.loadURL(`file://${__dirname}/../ui/index.html`);
-	win.on('closed', onClosed);
+  win.loadURL(`file://${__dirname}/../ui/index.html`);
+  win.on('closed', onClosed);
 
-	return win;
+  return win;
 }
 
 app.on('activate', () => {
-	if (!mainWindow) {
-		mainWindow = createMainWindow();
-	}
+  if (!mainWindow) {
+    mainWindow = createMainWindow();
+  }
 });
 
 app.on('ready', () => {
-	mainWindow = createMainWindow();
+  mainWindow = createMainWindow();
 });
 
 ipc.on('recognize', (event, buffer) => {

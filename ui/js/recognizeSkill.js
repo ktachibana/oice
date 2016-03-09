@@ -21,12 +21,8 @@ function blobToBuffer(blob) {
 module.exports = function (blob) {
   return new Promise((resolve, reject) => {
     blobToBuffer(blob).then(buffer => {
-      const form = new FormData();
-      form.append('file', blob);
-      request.post('/').send(form).end(function (err, charmData) {
-        if (err) reject(err);
-        resolve(charmData.body);
-      });
+      const charmData = ipc.sendSync('recognize', buffer);
+      resolve(charmData);
     });
   });
 };

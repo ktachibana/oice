@@ -1,25 +1,8 @@
-var child = require('child_process');
-
-var recognize = function(buffer) {
-  return new Promise(function(resolve, reject) {
-    var result = child.spawnSync('./recognize.sh', [], { input: buffer });
-    if (result.status === 0) {
-      resolve(result.stdout.toString());
-    } else {
-      reject(result.status, result.stdout.toString(), result.stderr.toString());
-    }
-  });
-};
+const julius = require('../julius');
 
 module.exports = function(buffer) {
   return new Promise(function(resolve, reject) {
-    var result = child.spawnSync('./recognize.sh', [], { input: buffer });
-    if (result.status !== 0) {
-      reject(result.status, result.stdout.toString(), result.stderr.toString());
-      return;
-    }
-
-    var output = result.stdout.toString();
+    const output = julius(buffer);
 
     var pattern = /sentence1: <s> (.+) <\/s>/;
     var match = pattern.exec(output);
