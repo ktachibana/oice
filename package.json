@@ -18,7 +18,7 @@
   "scripts": {
     "test": "xo",
     "start": "electron .",
-    "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --asar --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",
+    "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",
     "build:grammar": "cd julius/grammar; ./build.sh",
     "build": "npm run build:grammar; webpack",
     "start-dev": "npm run watch & bundle exec thin --ssl -p 4430 start",
