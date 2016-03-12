@@ -17,6 +17,8 @@
   },
   "scripts": {
     "test": "xo",
+    "install-external": "cd julius/platforms; ./install-external.sh",
+    "postinstall": "npm run install-external",
     "start": "electron .",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",
     "build:grammar": "cd julius/grammar; ./build.sh",
