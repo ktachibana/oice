@@ -1,4 +1,3 @@
-import './vendors';
 import renderComponent from './components';
 import {openMic} from './functions'
 import Application from './application';

@@ -1,3 +1,5 @@
+import './vendors';
+
 module.exports = {
   startMicLevelDetection: function(source, callback) {
     const analyser = source.context.createAnalyser();
@@ -17,24 +19,20 @@ module.exports = {
     return setInterval(onTimer, 100);
   },
 
+  getTime: function () {
+    return (new Date().getTime());
+  },
+
   startLimitTimer: function(limitTimeInMSec, options) {
     options = options || {};
     const limitCallback = options.limit || function() {};
     const progressCallback = options.progress || function(percent) {};
 
-    let timer = null;
     let timeFromStart = 0;
-    let timeAtPrevFrame = window.performance.now();
-
-    const stop = () => {
-      if (timer) {
-        cancelAnimationFrame(timer);
-        timer = null;
-      }
-    };
+    let timeAtPrevFrame = this.getTime();
 
     const updateFrame = () => {
-      const now = window.performance.now();
+      const now = this.getTime();
       timeFromStart += (now - timeAtPrevFrame);
       timeAtPrevFrame = now;
 
@@ -47,12 +45,10 @@ module.exports = {
       }
 
       progressCallback(percent);
-
-      timer = requestAnimationFrame(updateFrame);
     };
-    updateFrame();
+    const timerID = setInterval(updateFrame, 100);
 
-    return stop;
+    return () => { clearInterval(timerID); };
   },
 
   openMic: function() {

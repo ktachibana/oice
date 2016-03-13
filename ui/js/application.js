@@ -1,6 +1,6 @@
 import EventEmitter from 'events';
 import Recorder from 'recorderjs';
-import { startLimitTimer } from './functions';
+import fn from './functions';
 import recognizeSkill from './recognizeSkill';
 import model from './models';
 import store from 'store';
@@ -28,7 +28,7 @@ export default class Application extends EventEmitter {
     this.recorder = new Recorder(this.micInput);
     this.recorder.record();
 
-    this.timerStopper = startLimitTimer(5000, {
+    this.timerStopper = fn.startLimitTimer(5000, {
       progress: (percent) => {
         this.timerProgress = percent;
         this.emitChanged();
