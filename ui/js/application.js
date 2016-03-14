@@ -63,6 +63,10 @@ export default class Application extends EventEmitter {
     });
   }
 
+  get isRecording() {
+    return !!this.timerStopper;
+  }
+
   decideCharm() {
     if(this.candidateCharm) {
       this.charms = [this.candidateCharm, ...this.charms];

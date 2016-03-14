@@ -74,6 +74,7 @@ class App extends React.Component {
 
   toState() {
     return {
+      isRecording: this.app.isRecording,
       recordedVoice: this.app.recordedVoice,
       candidateCharm: this.app.candidateCharm,
       charms: this.app.charms,
@@ -118,21 +119,15 @@ class App extends React.Component {
     };
   }
 
-  onKeyDown(e) {
-    if(e.key === 'Shift') {
-      this.app.startCapture();
-    }
-  }
-
-  onKeyUp(e) {
-    if(e.key === 'Shift') {
-      this.app.stopCapture();
-    }
-  }
-
   onKeyPress(e) {
-    if(e.key == 'Enter') {
+    if(e.key === 'Enter') {
       this.app.decideCharm();
+    } else if(e.key === ']') {
+      if(this.app.isRecording) {
+        this.app.stopCapture();
+      } else {
+        this.app.startCapture();
+      }
     }
   }
 
@@ -163,12 +158,14 @@ class App extends React.Component {
   }
 
   get buttonText() {
-    if(!this.state.isFocusing) {
+    if(this.state.isRecording) {
+      return '録音中...';
+    } else if(!this.state.isFocusing) {
       return 'ここをクリック'
     } else if(this.state.candidateCharm) {
       return <span className="guide-message">正しくなければもう一度</span>;
     } else {
-      return 'Shiftキーを押しながらマイクに喋る'
+      return '"]"キーを押してマイクに喋り、もう一度"]"キー'
     }
   }
 
@@ -206,8 +203,6 @@ class App extends React.Component {
             <button type="button"
                     ref="keyboard"
                     className="recording-button btn btn-default btn-lg"
-                    onKeyDown={this.onKeyDown.bind(this)}
-                    onKeyUp={this.onKeyUp.bind(this)}
                     onKeyPress={this.onKeyPress.bind(this)}
                     onClick={this.onClickKeyboard.bind(this)}
                     onFocus={this.onFocusKeyboard.bind(this)}
