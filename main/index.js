@@ -1,8 +1,5 @@
-'use strict';
-const electron = require('electron');
-const ipc = electron.ipcMain;
-const app = electron.app;
-const recognizeSkill = require('./recognizeSkill');
+import { app, BrowserWindow, ipcMain as ipc } from 'electron';
+import recognizeSkill from './recognizeSkill';
 
 // report crashes to the Electron project
 require('crash-reporter').start();
@@ -20,7 +17,7 @@ function onClosed() {
 }
 
 function createMainWindow() {
-  const win = new electron.BrowserWindow({
+  const win = new BrowserWindow({
     width: 1024,
     height: 768,
     webPreferences: {
