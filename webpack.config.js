@@ -17,9 +17,9 @@ module.exports = [
     devtool: 'source-map'
   },
   {
+    target: 'node',
     entry: {
-      index: __dirname + "/main/index",
-      preload: __dirname + "/main/preload"
+      index: "./main/index"
     },
     output: {
       path: __dirname + "/dist",
@@ -27,18 +27,18 @@ module.exports = [
       libraryTarget: "commonjs"
     },
     externals: [
-      /julius/
+      /julius/,
+      /main/
     ],
     module: {
       loaders: [
         {
-          test: /.js$/,
+          test: /\.js$/,
           loader: "babel",
           exclude: /node_modules/
         }
       ]
     },
-    target: 'electron-main',
     node: {
       __dirname: false,
       __filename: false

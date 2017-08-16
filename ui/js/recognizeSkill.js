@@ -1,5 +1,3 @@
-import request from 'superagent';
-
 function blobToBuffer(blob) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -21,8 +19,15 @@ function blobToBuffer(blob) {
 module.exports = function (blob) {
   return new Promise((resolve, reject) => {
     blobToBuffer(blob).then(buffer => {
-      const charmData = ipc.sendSync('recognize', buffer);
-      resolve(charmData);
+      fetch('/recognize', {
+        method: 'POST',
+        body: buffer,
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        }
+      }).then((res) => {
+        resolve(res.json());
+      });
     });
   });
 };

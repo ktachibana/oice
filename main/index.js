@@ -1,49 +1,18 @@
-import { app, BrowserWindow, ipcMain as ipc } from 'electron';
-import recognizeSkill from './recognizeSkill';
+const express = require('express');
+const bodyParser = require('body-parser');
+const recognizeSkill = require('./recognizeSkill');
 
-// report crashes to the Electron project
-require('crash-reporter').start();
+const app = express();
 
-// adds debug features like hotkeys for triggering dev tools and reload
-require('electron-debug')();
+app.use(express.static('ui'));
+app.use(bodyParser.raw({limit: '5mb', type: '*/*'}));
 
-// prevent window being garbage collected
-let mainWindow;
-
-function onClosed() {
-  // dereference the window
-  // for multiple windows store them in an array
-  mainWindow = null;
-}
-
-function createMainWindow() {
-  const win = new BrowserWindow({
-    width: 1024,
-    height: 768,
-    webPreferences: {
-      nodeIntegration: false,
-      preload: __dirname + '/preload.js'
-    }
+app.post('/recognize', (req, res) => {
+  recognizeSkill(req.body).then((charm) => {
+    res.json(charm);
   });
-
-  win.loadURL(`file://${__dirname}/../ui/index.html`);
-  win.on('closed', onClosed);
-
-  return win;
-}
-
-app.on('activate', () => {
-  if (!mainWindow) {
-    mainWindow = createMainWindow();
-  }
 });
 
-app.on('ready', () => {
-  mainWindow = createMainWindow();
-});
-
-ipc.on('recognize', (event, buffer) => {
-  recognizeSkill(buffer).then((charm) => {
-    event.returnValue = charm;
-  });
+app.listen(3000, () => {
+  console.log('Example app listening on port 3000!');
 });
