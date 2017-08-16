@@ -18,7 +18,7 @@
   "scripts": {
     "test": "xo",
     "install-external": "cd julius/platforms; ./install-external.sh",
-    "postinstall": "npm run install-external",
+    "postinstall": "npm run install-external; npm run build",
     "start": "node main",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",
     "build:grammar": "cd julius/grammar; ./build.sh",
@@ -42,7 +42,6 @@
     "babel-preset-react": "^6.5.0",
     "body-parser": "^1.17.2",
     "classnames": "^2.2.3",
-    "electron-debug": "^0.6.0",
     "express": "^4.15.4",
     "raw-loader": "^0.5.1",
     "react": "^15.0.1",
@@ -53,8 +52,6 @@
   },
   "devDependencies": {
     "babel-cli": "^6.7.7",
-    "electron-packager": "^7.0.1",
-    "electron-prebuilt": "^0.37.7",
     "npm-check-updates": "^2.6.3",
     "npm-watch": "^0.1.4",
     "recorderjs": "git+https://github.com/mattdiamond/Recorderjs.git",

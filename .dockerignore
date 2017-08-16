@@ -1,0 +1,6 @@
+ui/assets
+node_modules
+tmp
+dist
+envtools
+julius/platforms/**/external
