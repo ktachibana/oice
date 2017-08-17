@@ -21,7 +21,7 @@
     "postinstall": "npm run install-external; npm run build",
     "start": "node main",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",
-    "build:grammar": "cd julius/grammar; ./build.sh",
+    "build:grammar": "cd julius/grammars; ./build.sh",
     "build": "npm run build:grammar; webpack",
     "watch": "npm-watch & webpack -w"
   },

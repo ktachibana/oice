@@ -2,7 +2,7 @@ import React from 'react';
 import classNames from 'classnames';
 import Charm from './charm';
 import MicDetection from './micDetection';
-const yomi = require('raw!../../../julius/grammar/charm.yomi');
+const yomi = require('raw!../../../julius/grammars/src/charm/charm.yomi');
 
 export default class App extends React.Component {
     constructor(props) {
