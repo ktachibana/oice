@@ -8,11 +8,9 @@
     "name": "ke_tachibana",
     "email": "deadzone@be.to"
   },
-  "electronVersion": "0.36.0",
   "watch": {
     "build:grammar": {
-      "patterns": "julius/grammar/charm.{yomi,grammar}",
-      "extensions": "yomi,grammar"
+      "patterns": "julius/grammars/src"
     }
   },
   "scripts": {
@@ -20,7 +18,6 @@
     "install-external": "node julius/platforms/install-external.js",
     "postinstall": "npm run install-external; npm run build",
     "start": "node main",
-    "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",
     "build:grammar": "cd julius/grammars; ./build.sh",
     "build": "npm run build:grammar; webpack",
     "watch": "npm-watch & webpack -w"
@@ -30,10 +27,6 @@
     "main",
     "index.html",
     "index.css"
-  ],
-  "keywords": [
-    "electron-app",
-    "electron"
   ],
   "dependencies": {
     "babel-core": "^6.7.7",

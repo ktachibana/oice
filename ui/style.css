@@ -53,6 +53,10 @@ h1 {
     border-radius: 4px;
 }
 
+.buttons {
+    margin: 8px;
+}
+
 .procedure-allow {
     margin: 16px;
 }
