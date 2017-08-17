@@ -17,7 +17,7 @@
   },
   "scripts": {
     "test": "xo",
-    "install-external": "cd julius/platforms; ./install-external.sh",
+    "install-external": "node julius/platforms/install-external.js",
     "postinstall": "npm run install-external; npm run build",
     "start": "node main",
     "package": "electron-packager . $npm_package_productName --out=dist --ignore='^/dist$' --prune --platform=win32,darwin --arch=all --overwrite --version=$npm_package_electronVersion",

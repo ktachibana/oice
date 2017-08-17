@@ -1,6 +1,6 @@
-ui/assets
 node_modules
-tmp
 dist
+ui/assets
 envtools
 julius/platforms/**/external
+tmp
